@@ -1,7 +1,7 @@
 #!/bin/bash
 DATE=$(date +'%Y%m%d')
 #wget ../kv1feeds/veolia  --accept=zip -q -P ../kv1feeds/veolia -nd -r http://kv1.openov.nl/veolia/ -l 1
-python kv1.py -d kv1vtn -f ../kv1feeds/veolia
+python manager.py -d kv1vtn -f ../kv1feeds/veolia
 psql -d kv1vtn -f ../sql/gtfs-shapes-veolia.sql
 psql -d kv1vtn -f ../sql/gtfs-shapes-passtimes.sql
 zip -j ../gtfs/veolia/gtfs-kv1veolia-$DATE.zip /tmp/*.txt

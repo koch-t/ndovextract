@@ -1,6 +1,6 @@
 #!/bin/bash
 DATE=$(date +'%Y%m%d')
-python kv1.py -d kv1arr -f ../kv1feeds/arriva
+python manager.py -d kv1arr -f ../kv1feeds/arriva
 rm -rf /tmp/*.txt
 psql -d kv1arr -f ../sql/gtfs-shapes-arriva.sql
 psql -d kv1arr -f ../sql/gtfs-shapes-passtimes.sql

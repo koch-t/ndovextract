@@ -1,7 +1,7 @@
 #!/bin/bash
 DATE=$(date +'%Y%m%d')
 wget ../kv1feeds/syntus -N --accept=zip -q -P ../kv1feeds/syntus -nd -r http://kv1.openov.nl/syntus/ -l 1
-python kv1.py -d kv1syntus -f ../kv1feeds/syntus
+python manager.py -d kv1syntus -f ../kv1feeds/syntus
 psql -d kv1syntus -f ../sql/gtfs-shapes-syntus.sql
 psql -d kv1syntus -f ../sql/gtfs-shapes-passtimes.sql
 zip -j ../gtfs/syntus/gtfs-kv1syntus-$DATE.zip /tmp/*.txt

@@ -1,7 +1,7 @@
 #!/bin/bash
 DATE=$(date +'%Y%m%d')
 wget ../kv1feeds/ebs -N --accept=zip -q -P ../kv1feeds/ebs -nd -r http://kv1.openov.nl/ebs/ -l 1
-python kv1.py -d kv1ebs -f ../kv1feeds/ebs
+python manager.py -d kv1ebs -f ../kv1feeds/ebs
 rm -rf /tmp/*.txt
 psql -d kv1ebs -f ../sql/gtfs-shapes-ebs.sql
 psql -d kv1ebs -f ../sql/gtfs-shapes-passtimes.sql

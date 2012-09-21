@@ -1,6 +1,6 @@
 #!/bin/bash
 DATE=$(date +'%Y%m%d')
-python kv1.py -d kv1gvb -s http://195.193.209.12/gvbpublicatieinternet/KV1/KV1index.xml
+python manager.py -d kv1gvb -s http://195.193.209.12/gvbpublicatieinternet/KV1/KV1index.xml
 rm -rf /tmp/*.txt
 psql -d kv1gvb -f ../sql/gtfs-shapes-gvb.sql
 psql -d kv1gvb -f ../sql/gtfs-shapes-passtimes.sql

@@ -1,7 +1,7 @@
 #!/bin/bash
 DATE=$(date +'%Y%m%d')
 wget ../kv1feeds/qbuzz -N --accept=zip -q -P ../kv1feeds/qbuzz -nd -r http://kv1.openov.nl/qbuzz/ -l 1
-python kv1.py -d kv1qbuzz -f ../kv1feeds/qbuzz
+python manager.py -d kv1qbuzz -f ../kv1feeds/qbuzz
 rm -rf /tmp/*.txt
 psql -d kv1qbuzz -f ../sql/gtfs-shapes-qbuzz.sql
 psql -d kv1qbuzz -f ../sql/gtfs-shapes-passtimes.sql
