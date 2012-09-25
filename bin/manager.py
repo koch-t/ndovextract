@@ -73,7 +73,7 @@ def setversion(conn,meta):
     cur = conn.cursor()
     if 'DataOwnerVersion' not in meta:
         meta['DataOwnerVersion'] = 1
-    cur.execute("INSERT INTO version (dataownercode,validfrom,validthru,filename,dataownerversion) VALUES (%(DataOwnerCode)s,%(ValidFrom)s,%(ValidThru)s,%(FileName)s,%(DataOwnerVersion)s)",meta)
+    cur.execute("INSERT INTO version (dataownercode,validfrom,validthru,filename,dataownerversion) VALUES (%(DataOwnerCode)s,%(ValidFrom)s,%(ValidThru)s,%(Key)s,%(DataOwnerVersion)s)",meta)
     for x in reversed(importorder):
         cur.execute("update %s_delta set version = (select last_value from version_version_seq)" % (x))
     conn.commit()
@@ -104,15 +104,15 @@ def purge(conn):
     cur.close()
     conn.commit()
 
-def fileimported(conn,filename,dataownerversion):
+def fileimported(conn,key,dataownerversion):
     cur = conn.cursor()
-    cur.execute("SELECT (EXISTS (SELECT 1 FROM version WHERE filename = %s AND dataownerversion = %s) or EXISTS (SELECT 1 FROM purgedversion WHERE filename = %s AND dataownerversion = %s))",[filename,dataownerversion,filename,dataownerversion])
+    cur.execute("SELECT (EXISTS (SELECT 1 FROM version WHERE filename = %s AND dataownerversion = %s) or EXISTS (SELECT 1 FROM purgedversion WHERE filename = %s AND dataownerversion = %s))",[key,dataownerversion,key,dataownerversion])
     try:
         return cur.fetchone()[0]
     finally:
         cur.close()
 
-def importfile(conn,path,filename,dataownerversion):
+def importfile(conn,path,filename,dataownerversion,key):
     if path is None or path == '':
         path = '.'  
     cleandelta(conn)
@@ -124,7 +124,10 @@ def importfile(conn,path,filename,dataownerversion):
         zipfile.ZipFile.extract(zip,'Csv.zip','/tmp')
         zip = zipfile.ZipFile('/tmp/Csv.zip','r')
     meta = importzip(conn,filename,zip)
-    meta['FileName'] = filename
+    if key is None:
+        meta['Key'] = filename
+    else: 
+        meta['Key'] = key
     meta['DataOwnerVersion'] = dataownerversion
     setversion(conn,meta)
     mergedelta(meta['DataOwnerCode'],conn)
@@ -153,17 +156,37 @@ def downloadfile(filename,url):
     print
     f.close()
 
+def multikeysort(items, columns):
+    from operator import itemgetter
+    comparers = [ ((itemgetter(col[1:].strip()), -1) if col.startswith('-') else (itemgetter(col.strip()), 1)) for col in columns]  
+    def comparer(left, right):
+        for fn, mult in comparers:
+            result = cmp(fn(left), fn(right))
+            if result:
+                return mult * result
+        else:
+            return 0
+    return sorted(items, cmp=comparer)
 
 def sync(conn,kv1index):
     tree = etree.parse(kv1index)
+    index = []
     for periode in tree.findall('periode'):
-        filename = periode.find('zipfile').text
-        dataownerversion = periode.find('versie').text
-        ispublished = periode.find('isgepubliceerd').text
-        if not fileimported(conn,filename,dataownerversion) and ispublished == 'true':
-            url = '/'.join(kv1index.strip().split('/')[:-1])+'/'+filename
-            downloadfile(filename,url)
-            importfile(conn,'/tmp',filename,dataownerversion)
+        file = {}
+        file['key'] = periode.attrib['key']
+        file['filename'] = periode.find('zipfile').text
+        file['dataownerversion'] = periode.find('versie').text
+        file['ispublished'] = periode.find('isgepubliceerd').text
+        file['validfrom'] = periode.find('startdatum').text
+        file['validthru'] = periode.find('einddatum').text
+        index.append(file)
+    index = multikeysort(index, ['validfrom', '-validthru'])
+    for f in index:
+        if not fileimported(conn,f['key'],f['dataownerversion']) and f['ispublished'] == 'true':
+            print 'Import file %s version %s' % (f['filename'],str(f['dataownerversion']))
+            url = '/'.join(kv1index.strip().split('/')[:-1])+'/'+f['filename']
+            downloadfile(f['filename'],url)
+            importfile(conn,'/tmp',f['filename'],f['dataownerversion'],f['key'])
 
 def main():
     usage = "usage: %prog [options]"
@@ -200,16 +223,14 @@ def main():
     if opts.addfile:
         path, filename = os.path.split(opts.addfile)
         conn = psycopg2.connect("dbname='%s'" % (opts.database))
-        importfile(conn,path,filename,1)
+        importfile(conn,path,filename,1,None)
         conn.close()
-    elif opts.addfile:
-        importfile(conn,path,filename,1)
     elif opts.addfolder:
         files = os.listdir(opts.addfolder)
         files.sort(key=lambda f: os.path.getmtime(os.path.join(opts.addfolder, f)))
         conn = psycopg2.connect("dbname='%s'" % (opts.database))
         for file in files:
-            importfile(conn,opts.addfolder,file,1)
+            importfile(conn,opts.addfolder,file,1,None)
         conn.close()
     elif opts.kv1index:
         conn = psycopg2.connect("dbname='%s'" % (opts.database))
