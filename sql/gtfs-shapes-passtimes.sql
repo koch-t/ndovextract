@@ -116,7 +116,8 @@ d.destnamefull AS trip_headsign,
 (cast(j.direction AS int4) - 1) AS direction_id,
 jt.version||'|'||jt.dataownercode||'|'||jt.lineplanningnumber||'|'||jt.journeypatterncode AS shape_id,
 wheelchair_accessible
-FROM pujopass AS p, jopa AS j, jopatili AS jt, dest AS d, gtfs_wheelchair_accessibility as g
+FROM pujopass AS p, jopa AS j, jopatili AS jt, dest AS d, gtfs_wheelchair_accessibility as g,
+(select distinct version,dataownercode,organizationalunitcode,schedulecode,scheduletypecode from operday) as v
 WHERE
 coalesce(p.wheelchairaccessible,'UNKNOWN') = g.wheelchairaccessible AND
 p.dataownercode = j.dataownercode AND
@@ -131,7 +132,12 @@ jt.dataownercode = d.dataownercode AND
 jt.destcode = d.destcode AND
 jt.version = d.version AND
 jt.timinglinkorder = 1 AND
-p.stoporder = 1
+p.stoporder = 1 AND
+p.version = v.version AND
+p.dataownercode = v.dataownercode AND
+p.organizationalunitcode = v.organizationalunitcode AND
+p.schedulecode = v.schedulecode AND
+p.scheduletypecode = v.scheduletypecode
 ) TO '/tmp/trips.txt' WITH CSV HEADER;
 
 COPY (
@@ -144,10 +150,15 @@ p.dataownercode||'|'||p.userstopcode AS stop_id,
 p.stoporder AS stop_sequence,
 cast(not getin as integer) as pickup_type,
 cast(not getout as integer) as drop_off_type
-FROM pujopass AS p, usrstop as u
+FROM pujopass AS p, usrstop as u,
+(select distinct version,dataownercode,organizationalunitcode,schedulecode,scheduletypecode from operday) as v
 WHERE p.dataownercode = u.dataownercode
 and p.version = u.version
 AND p.userstopcode = u.userstopcode
-AND (u.getin = TRUE OR u.getout = TRUE)
+AND (u.getin = TRUE OR u.getout = TRUE) AND
+p.version = v.version AND
+p.dataownercode = v.dataownercode AND
+p.organizationalunitcode = v.organizationalunitcode AND
+p.schedulecode = v.schedulecode AND
+p.scheduletypecode = v.scheduletypecode
 ) TO '/tmp/stop_times.txt' WITH CSV HEADER;
-

@@ -48,18 +48,18 @@ pool.distancesincestartoflink) AS shape_pt_sequence
 ) TO '/tmp/shapes.txt' WITH CSV HEADER;
 
 -- GTFS: calendar (Schedules en passeertijden)
-COPY (
-SELECT
-version||'|'||dataownercode||'|'||organizationalunitcode||'|'||schedulecode||'|'||scheduletypecode AS service_id,
-cast(strpos(description, 'Monday') > 0 AS int4) AS monday,
-cast(strpos(description, 'Tuesday') > 0 AS int4) AS tuesday,
-cast(strpos(description, 'Wednesday') > 0 AS int4) AS wednesday,
-cast(strpos(description, 'Thursday') > 0 AS int4) AS thursday,
-cast(strpos(description, 'Friday') > 0 AS int4) AS friday,
-cast(strpos(description, 'Saturday') > 0 AS int4) AS saturday,
-cast(strpos(description, 'Sunday') > 0 AS int4) AS sunday,
-replace(CAST(validfrom AS TEXT), '-', '') AS start_date,
-replace(CAST(validthru AS TEXT), '-', '') AS end_date
-FROM
-schedvers
-) TO '/tmp/calendar.txt' WITH CSV HEADER;
+--COPY (
+--SELECT
+--version||'|'||dataownercode||'|'||organizationalunitcode||'|'||schedulecode||'|'||scheduletypecode AS service_id,
+--cast(strpos(description, 'Monday') > 0 AS int4) AS monday,
+--cast(strpos(description, 'Tuesday') > 0 AS int4) AS tuesday,
+--cast(strpos(description, 'Wednesday') > 0 AS int4) AS wednesday,
+--cast(strpos(description, 'Thursday') > 0 AS int4) AS thursday,
+--cast(strpos(description, 'Friday') > 0 AS int4) AS friday,
+--cast(strpos(description, 'Saturday') > 0 AS int4) AS saturday,
+--cast(strpos(description, 'Sunday') > 0 AS int4) AS sunday,
+--replace(CAST(validfrom AS TEXT), '-', '') AS start_date,
+--replace(CAST(validthru AS TEXT), '-', '') AS end_date
+--FROM
+--schedvers
+--) TO '/tmp/calendar.txt' WITH CSV HEADER;

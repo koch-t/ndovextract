@@ -48,18 +48,18 @@ pool.distancesincestartoflink) AS shape_pt_sequence
 ) TO '/tmp/shapes.txt' WITH CSV HEADER;
 
 -- GTFS: calendar (Schedules en passeertijden)
-COPY (
-SELECT
-version||'|'||dataownercode||'|'||organizationalunitcode||'|'||schedulecode||'|'||scheduletypecode AS service_id,
-cast((description like '%Weekday%' or description like '%Mon-Wed%' or description like '%Monday%') AS int4) AS monday,
-cast((description like '%Weekday%' or description like '%Mon-Wed%' or description like '%Tuesday%') AS int4) AS tuesday,
-cast((description like '%Weekday%' or description like '%Mon-Wed%' or description like '%Wednesday%') AS int4) AS wednesday,
-cast((description like '%Weekday%' or description like '%Thu-Fri%' or description like '%Thursday%') AS int4) AS thursday,
-cast((description like '%Weekday%' or description like '%Thu-Fri%' or description like '%Friday%') AS int4) AS friday,
-cast((description like '%Saturday%') AS int4) AS saturday,
-cast((description like '%Sunday%') AS int4) AS sunday,
-replace(CAST(validfrom AS TEXT), '-', '') AS start_date,
-replace(CAST(validthru AS TEXT), '-', '') AS end_date
-FROM
-schedvers
-) TO '/tmp/calendar.txt' WITH CSV HEADER;
+--COPY (
+--SELECT
+--version||'|'||dataownercode||'|'||organizationalunitcode||'|'||schedulecode||'|'||scheduletypecode AS service_id,
+--cast((description like '%Weekday%' or description like '%Mon-Wed%' or description like '%Monday%') AS int4) AS monday,
+--cast((description like '%Weekday%' or description like '%Mon-Wed%' or description like '%Tuesday%') AS int4) AS tuesday,
+--cast((description like '%Weekday%' or description like '%Mon-Wed%' or description like '%Wednesday%') AS int4) AS wednesday,
+--cast((description like '%Weekday%' or description like '%Thu-Fri%' or description like '%Thursday%') AS int4) AS thursday,
+--cast((description like '%Weekday%' or description like '%Thu-Fri%' or description like '%Friday%') AS int4) AS friday,
+--cast((description like '%Saturday%') AS int4) AS saturday,
+--cast((description like '%Sunday%') AS int4) AS sunday,
+--replace(CAST(validfrom AS TEXT), '-', '') AS start_date,
+--replace(CAST(validthru AS TEXT), '-', '') AS end_date
+--FROM
+--schedvers
+--) TO '/tmp/calendar.txt' WITH CSV HEADER;

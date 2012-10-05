@@ -49,18 +49,18 @@ pool.distancesincestartoflink) AS shape_pt_sequence
 
 -- GTFS: calendar (Schedules en passeertijden)
 -- GTFS: calendar (Schedules en passeertijden)
-COPY (
-SELECT
-version||'|'||dataownercode||'|'||organizationalunitcode||'|'||schedulecode||'|'||scheduletypecode AS service_id,
-cast(scheduletypecode = 'Mo-We-Thu' AS int4) AS monday,
-cast(scheduletypecode = 'Tuesday' AS int4) AS tuesday,
-cast(scheduletypecode = 'Mo-We-Thu' AS int4) AS wednesday,
-cast(scheduletypecode = 'Mo-We-Thu' as int4) AS thursday,
-cast(scheduletypecode = 'Friday' AS int4) AS friday,
-cast(scheduletypecode = 'Saturday' AS int4) AS saturday,
-cast(scheduletypecode = 'Sunday' AS int4) AS sunday,
-replace(CAST(validfrom AS TEXT), '-', '') AS start_date,
-replace(CAST(validthru AS TEXT), '-', '') AS end_date
-FROM
-schedvers
-) TO '/tmp/calendar.txt' WITH CSV HEADER;
+--COPY (
+--SELECT
+--version||'|'||dataownercode||'|'||organizationalunitcode||'|'||schedulecode||'|'||scheduletypecode AS service_id,
+--cast(scheduletypecode = 'Mo-We-Thu' AS int4) AS monday,
+--cast(scheduletypecode = 'Tuesday' AS int4) AS tuesday,
+--cast(scheduletypecode = 'Mo-We-Thu' AS int4) AS wednesday,
+--cast(scheduletypecode = 'Mo-We-Thu' as int4) AS thursday,
+--cast(scheduletypecode = 'Friday' AS int4) AS friday,
+--cast(scheduletypecode = 'Saturday' AS int4) AS saturday,
+--cast(scheduletypecode = 'Sunday' AS int4) AS sunday,
+--replace(CAST(validfrom AS TEXT), '-', '') AS start_date,
+--replace(CAST(validthru AS TEXT), '-', '') AS end_date
+--FROM
+--schedvers
+--) TO '/tmp/calendar.txt' WITH CSV HEADER;

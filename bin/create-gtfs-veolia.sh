@@ -1,4 +1,5 @@
 #!/bin/bash
+cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DATE=$(date +'%Y%m%d')
 #wget ../kv1feeds/veolia  --accept=zip -q -P ../kv1feeds/veolia -nd -r http://kv1.openov.nl/veolia/ -l 1
 python manager.py -d kv1vtn -f ../kv1feeds/veolia

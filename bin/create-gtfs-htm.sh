@@ -1,4 +1,5 @@
 #!/bin/bash
+cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DATE=$(date +'%Y%m%d')
 wget ../kv1feeds/htm -N --accept=zip -q -P ../kv1feeds/htm -nd -r http://kv1.openov.nl/htm/ -l 1
 python manager.py -d kv1htm -f ../kv1feeds/htm

@@ -1,4 +1,5 @@
 #!/bin/bash
+cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DATE=$(date +'%Y%m%d')
 python manager.py -d kv1arr -f ../kv1feeds/arriva
 rm -rf /tmp/*.txt

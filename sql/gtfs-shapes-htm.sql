@@ -48,18 +48,18 @@ pool.distancesincestartoflink) AS shape_pt_sequence
 ) TO '/tmp/shapes.txt' WITH CSV HEADER;
 
 -- GTFS: calendar (Schedules en passeertijden)
-COPY (
-SELECT
-version||'|'||dataownercode||'|'||organizationalunitcode||'|'||schedulecode||'|'||scheduletypecode AS service_id,
-cast(1 in (select extract(dow from generate_series(validfrom, validthru, interval '1 day'))) AS int4) AS monday,
-cast(2 in (select extract(dow from generate_series(validfrom, validthru, interval '1 day'))) AS int4) AS tuesday,
-cast(3 in (select extract(dow from generate_series(validfrom, validthru, interval '1 day'))) AS int4) AS wednesday,
-cast(4 in (select extract(dow from generate_series(validfrom, validthru, interval '1 day'))) AS int4) AS thursday,
-cast(5 in (select extract(dow from generate_series(validfrom, validthru, interval '1 day'))) AS int4) AS friday,
-cast(6 in (select extract(dow from generate_series(validfrom, validthru, interval '1 day'))) AS int4) AS saturday,
-cast(7 in (select extract(dow from generate_series(validfrom, validthru, interval '1 day'))) AS int4) AS sunday,
-replace(CAST(validfrom AS TEXT), '-', '') AS start_date,
-replace(CAST(validthru AS TEXT), '-', '') AS end_date
-FROM
-schedvers
-) TO '/tmp/calendar.txt' WITH CSV HEADER;
+--COPY (
+--SELECT
+--version||'|'||dataownercode||'|'||organizationalunitcode||'|'||schedulecode||'|'||scheduletypecode AS service_id,
+--cast(1 in (select extract(dow from generate_series(validfrom, validthru, interval '1 day'))) AS int4) AS monday,
+--cast(2 in (select extract(dow from generate_series(validfrom, validthru, interval '1 day'))) AS int4) AS tuesday,
+--cast(3 in (select extract(dow from generate_series(validfrom, validthru, interval '1 day'))) AS int4) AS wednesday,
+--cast(4 in (select extract(dow from generate_series(validfrom, validthru, interval '1 day'))) AS int4) AS thursday,
+--cast(5 in (select extract(dow from generate_series(validfrom, validthru, interval '1 day'))) AS int4) AS friday,
+--cast(6 in (select extract(dow from generate_series(validfrom, validthru, interval '1 day'))) AS int4) AS saturday,
+--cast(7 in (select extract(dow from generate_series(validfrom, validthru, interval '1 day'))) AS int4) AS sunday,
+--replace(CAST(validfrom AS TEXT), '-', '') AS start_date,
+--replace(CAST(validthru AS TEXT), '-', '') AS end_date
+--FROM
+--schedvers
+--) TO '/tmp/calendar.txt' WITH CSV HEADER;

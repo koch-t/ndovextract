@@ -51,19 +51,19 @@ pool.distancesincestartoflink) AS shape_pt_sequence
 ) TO '/tmp/shapes.txt' WITH CSV HEADER;
 
 --GTFS: calendar (Schedules en passeertijden)
-COPY (
-SELECT
-version||'|'||dataownercode||'|'||organizationalunitcode||'|'||schedulecode||'|'||scheduletypecode AS service_id,
-0 AS monday,
-0 AS tuesday,
-0 AS wednesday,
-0 AS thursday,
-0 AS friday,
-0 AS saturday,
-0 AS sunday,
-replace(CAST(validfrom AS TEXT), '-', '') AS start_date,
-replace(CAST(validthru AS TEXT), '-', '') AS end_date
-FROM
-schedvers
-) TO '/tmp/calendar.txt' WITH CSV HEADER;
+--COPY (
+--SELECT
+--version||'|'||dataownercode||'|'||organizationalunitcode||'|'||schedulecode||'|'||scheduletypecode AS service_id,
+--0 AS monday,
+--0 AS tuesday,
+--0 AS wednesday,
+--0 AS thursday,
+--0 AS friday,
+--0 AS saturday,
+--0 AS sunday,
+--replace(CAST(validfrom AS TEXT), '-', '') AS start_date,
+--replace(CAST(validthru AS TEXT), '-', '') AS end_date
+--FROM
+--schedvers
+--) TO '/tmp/calendar.txt' WITH CSV HEADER;
 

@@ -182,6 +182,7 @@ def sync(conn,kv1index):
         index.append(file)
     index = multikeysort(index, ['validfrom', '-validthru'])
     for f in index:
+        print 'key: '+f['key']+' filename: ' + f['filename'] + ' startdatum ' + f['validfrom'][0:10] + ' einddatum ' + f['validthru'][0:10] 
         if not fileimported(conn,f['key'],f['dataownerversion']) and f['ispublished'] == 'true':
             print 'Import file %s version %s' % (f['filename'],str(f['dataownerversion']))
             url = '/'.join(kv1index.strip().split('/')[:-1])+'/'+f['filename']
@@ -217,7 +218,7 @@ def main():
         parser.print_help()
         exit(-1)
     if opts.purge:
-        conn = psycopg2.connect("dbname='%s''" % (opts.database))
+        conn = psycopg2.connect("dbname='%s'" % (opts.database))
         purge(conn)
         conn.close()
     if opts.addfile:
