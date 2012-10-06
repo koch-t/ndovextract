@@ -148,8 +148,8 @@ coalesce(p.targetarrivaltime,p.targetdeparturetime) AS arrival_time,
 coalesce(p.targetdeparturetime,p.targetarrivaltime) AS departure_time,
 p.dataownercode||'|'||p.userstopcode AS stop_id,
 p.stoporder AS stop_sequence,
-cast(not getin as integer) as pickup_type,
-cast(not getout as integer) as drop_off_type
+CASE WHEN (productformulatype in (2,35,36)) THEN 3 ELSE cast(not getin as integer) END as pickup_type,
+CASE WHEN (productformulatype in (2,35,36)) THEN 3 ELSE cast(not getout as integer) END as drop_off_type
 FROM pujopass AS p, usrstop as u,
 (select distinct version,dataownercode,organizationalunitcode,schedulecode,scheduletypecode from operday) as v
 WHERE p.dataownercode = u.dataownercode
