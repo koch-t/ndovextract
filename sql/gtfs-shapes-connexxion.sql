@@ -169,10 +169,10 @@ FROM(
 		tv.specificdaycode = pj.specificdaycode) as calendar
 	) as calendar_dates
 WHERE
-position( cast ((extract(dow from date) +1) as text) in daytype) != 0
+position( CAST(CASE WHEN extract(dow from date) = 0 THEN 7 ELSE extract(dow from date) END as text) in daytype) != 0
 AND NOT EXISTS (
   SELECT 1 FROM (select cast(validdate as date) as excopdate,left(cast(daytypeason as text),1) as daytypeason from excopday) as excopday
-  WHERE date = excopdate and position( cast ((extract(dow from date) +1) as text) in daytypeason) = 0
+  WHERE date = excopdate and position( CAST(CASE WHEN extract(dow from date) = 0 THEN 7 ELSE extract(dow from date) END as text) in daytypeason) = 0
   )
 UNION
 SELECT
