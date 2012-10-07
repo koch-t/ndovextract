@@ -151,6 +151,8 @@ p.stoporder AS stop_sequence,
 CASE WHEN (productformulatype in (2,35,36)) THEN 3 ELSE cast(not getin as integer) END as pickup_type,
 CASE WHEN (productformulatype in (2,35,36)) THEN 3 ELSE cast(not getout as integer) END as drop_off_type
 FROM pujopass AS p, usrstop as u,
+(select distinct on (version,dataownercode,lineplanningnumber,journeypatterncode) * from jopatili ORDER BY 
+version,dataownercode,lineplanningnumber,journeypatterncode,timinglinkorder) as j,
 (select distinct version,dataownercode,organizationalunitcode,schedulecode,scheduletypecode from operday) as v
 WHERE p.dataownercode = u.dataownercode
 and p.version = u.version
@@ -160,5 +162,9 @@ p.version = v.version AND
 p.dataownercode = v.dataownercode AND
 p.organizationalunitcode = v.organizationalunitcode AND
 p.schedulecode = v.schedulecode AND
-p.scheduletypecode = v.scheduletypecode
+p.scheduletypecode = v.scheduletypecode AND
+p.version = j.version AND
+p.dataownercode = j.dataownercode AND
+p.lineplanningnumber = j.lineplanningnumber AND
+p.journeypatterncode = j.journeypatterncode
 ) TO '/tmp/stop_times.txt' WITH CSV HEADER;
