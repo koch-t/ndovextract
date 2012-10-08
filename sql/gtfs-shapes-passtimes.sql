@@ -99,6 +99,29 @@ operday
 
 alter table pujopass add column wheelchairaccessible VARCHAR(13);
 
+create table gtfs_route_bikes_allowed (
+        "dataownercode"      VARCHAR(10)   NOT NULL,
+        "lineplanningnumber" VARCHAR(10)   NOT NULL,
+        "trip_bikes_allowed" int4,
+        PRIMARY KEY ("dataownercode", "lineplanningnumber")
+);
+insert into gtfs_route_bikes_allowed values ('GVB','900',2);
+insert into gtfs_route_bikes_allowed values ('GVB','901',2);
+insert into gtfs_route_bikes_allowed values ('GVB','902',2);
+insert into gtfs_route_bikes_allowed values ('GVB','904',2);
+insert into gtfs_route_bikes_allowed values ('GVB','905',2);
+insert into gtfs_route_bikes_allowed values ('GVB','906',2);
+insert into gtfs_route_bikes_allowed values ('GVB','907',2);
+insert into gtfs_route_bikes_allowed values ('GVB','50',2);
+insert into gtfs_route_bikes_allowed values ('GVB','51',2);
+insert into gtfs_route_bikes_allowed values ('GVB','52',2);
+insert into gtfs_route_bikes_allowed values ('GVB','53',2);
+insert into gtfs_route_bikes_allowed values ('GVB','54',2);
+insert into gtfs_route_bikes_allowed values ('CXX','N419',2);
+insert into gtfs_route_bikes_allowed values ('CXX','Z020',2);
+insert into gtfs_route_bikes_allowed values ('CXX','Z050',2);
+insert into gtfs_route_bikes_allowed values ('CXX','Z060',2);
+
 -- GTFS: trips.txt (Schedules en passeertijden)
 --
 -- Missing:
@@ -115,9 +138,11 @@ AS trip_id,
 d.destnamefull AS trip_headsign,
 (cast(j.direction AS int4) - 1) AS direction_id,
 jt.version||'|'||jt.dataownercode||'|'||jt.lineplanningnumber||'|'||jt.journeypatterncode AS shape_id,
-wheelchair_accessible
-FROM pujopass AS p, jopa AS j, jopatili AS jt, dest AS d, gtfs_wheelchair_accessibility as g,
-(select distinct version,dataownercode,organizationalunitcode,schedulecode,scheduletypecode from operday) as v
+wheelchair_accessible,
+trip_bikes_allowed
+FROM jopa AS j, jopatili AS jt, dest AS d, gtfs_wheelchair_accessibility as g,
+(select distinct version,dataownercode,organizationalunitcode,schedulecode,scheduletypecode from operday) as v,
+pujopass as p LEFT JOIN gtfs_route_bikes_allowed using (dataownercode,lineplanningnumber)
 WHERE
 coalesce(p.wheelchairaccessible,'UNKNOWN') = g.wheelchairaccessible AND
 p.dataownercode = j.dataownercode AND
@@ -140,9 +165,12 @@ p.schedulecode = v.schedulecode AND
 p.scheduletypecode = v.scheduletypecode
 ) TO '/tmp/trips.txt' WITH CSV HEADER;
 
+-- workaround for some KV1
+alter table jopatili add column productformulatype DECIMAL(4);
+
 COPY (
 SELECT
-p.version||'|'||p.dataownercode||'|'||p.organizationalunitcode||'|'||p.schedulecode||'|'||p.scheduletypecode||'|'||p.lineplanningnumber||'|'||p.journeynumber 
+p.version||'|'||p.dataownercode||'|'||p.organizationalunitcode||'|'||p.schedulecode||'|'||p.scheduletypecode||'|'||p.lineplanningnumber||'|'||p.journeynumber
 AS trip_id,
 coalesce(p.targetarrivaltime,p.targetdeparturetime) AS arrival_time,
 coalesce(p.targetdeparturetime,p.targetarrivaltime) AS departure_time,
@@ -150,10 +178,11 @@ p.dataownercode||'|'||p.userstopcode AS stop_id,
 p.stoporder AS stop_sequence,
 CASE WHEN (productformulatype in (2,35,36)) THEN 3 ELSE cast(not getin as integer) END as pickup_type,
 CASE WHEN (productformulatype in (2,35,36)) THEN 3 ELSE cast(not getout as integer) END as drop_off_type
-FROM pujopass AS p, usrstop as u,
-(select distinct on (version,dataownercode,lineplanningnumber,journeypatterncode) * from jopatili ORDER BY 
-version,dataownercode,lineplanningnumber,journeypatterncode,timinglinkorder) as j,
-(select distinct version,dataownercode,organizationalunitcode,schedulecode,scheduletypecode from operday) as v
+FROM usrstop as u,
+(select distinct version,dataownercode,organizationalunitcode,schedulecode,scheduletypecode from operday) as v,
+pujopass AS p
+LEFT JOIN jopatili as j ON (p.version = j.version AND p.dataownercode = j.dataownercode AND p.lineplanningnumber = j.lineplanningnumber AND 
+p.journeypatterncode = j.journeypatterncode AND p.stoporder = j.timinglinkorder)
 WHERE p.dataownercode = u.dataownercode
 and p.version = u.version
 AND p.userstopcode = u.userstopcode
@@ -162,9 +191,5 @@ p.version = v.version AND
 p.dataownercode = v.dataownercode AND
 p.organizationalunitcode = v.organizationalunitcode AND
 p.schedulecode = v.schedulecode AND
-p.scheduletypecode = v.scheduletypecode AND
-p.version = j.version AND
-p.dataownercode = j.dataownercode AND
-p.lineplanningnumber = j.lineplanningnumber AND
-p.journeypatterncode = j.journeypatterncode
-) TO '/tmp/stop_times.txt' WITH CSV HEADER;
+p.scheduletypecode = v.scheduletypecode
+)TO '/tmp/stop_times.txt' WITH CSV HEADER;
