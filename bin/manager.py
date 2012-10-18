@@ -168,6 +168,13 @@ def multikeysort(items, columns):
             return 0
     return sorted(items, cmp=comparer)
 
+def deletedelta(conn,key):
+    print 'delete delta with key ' + str(key)
+    cur = conn.cursor()
+    cur.execute("DELETE FROM version WHERE filename = %s",[key])
+    cur.close()
+    conn.commit()
+
 def sync(conn,kv1index):
     tree = etree.parse(kv1index)
     index = []
@@ -177,6 +184,8 @@ def sync(conn,kv1index):
         file['filename'] = periode.find('zipfile').text
         file['dataownerversion'] = periode.find('versie').text
         file['ispublished'] = periode.find('isgepubliceerd').text
+        if file['ispublished'] == 'false':
+            deletedelta(conn,file['key'])
         file['validfrom'] = periode.find('startdatum').text
         file['validthru'] = periode.find('einddatum').text
         index.append(file)
