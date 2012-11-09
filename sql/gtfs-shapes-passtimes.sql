@@ -121,6 +121,7 @@ insert into gtfs_route_bikes_allowed values ('CXX','N419',2);
 insert into gtfs_route_bikes_allowed values ('CXX','Z020',2);
 insert into gtfs_route_bikes_allowed values ('CXX','Z050',2);
 insert into gtfs_route_bikes_allowed values ('CXX','Z060',2);
+insert into gtfs_route_bikes_allowed values ('VTN','26',2);
 
 -- GTFS: trips.txt (Schedules en passeertijden)
 --
@@ -135,6 +136,7 @@ p.dataownercode||'|'||p.lineplanningnumber AS route_id,
 p.version||'|'||p.dataownercode||'|'||p.organizationalunitcode||'|'||p.schedulecode||'|'||p.scheduletypecode AS service_id,
 p.version||'|'||p.dataownercode||'|'||p.organizationalunitcode||'|'||p.schedulecode||'|'||p.scheduletypecode||'|'||p.lineplanningnumber||'|'||p.journeynumber 
 AS trip_id,
+p.journeynumber as trip_short_name,
 d.destnamefull AS trip_headsign,
 (cast(j.direction AS int4) - 1) AS direction_id,
 jt.version||'|'||jt.dataownercode||'|'||jt.lineplanningnumber||'|'||jt.journeypatterncode AS shape_id,
