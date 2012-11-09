@@ -149,9 +149,11 @@ FROM(
 	SELECT
 	service_id,
 	CASE WHEN (validfrom != validthru) THEN cast (generate_series(validfrom,validthru,'1 day') as date) ELSE validfrom END as date,
-        daytype
+        daytype,
+        version
 	FROM (
 		SELECT
+                pj.version,
 		pj.version||'|'||pj.dataownercode||'|'||pj.timetableversioncode||'|'||pj.organizationalunitcode||'|'||pj.periodgroupcode||'|'||pj.specificdaycode||'|'||pj.daytype AS service_id,
 		pj.daytype,
 		pv.validfrom as validfrom,
@@ -167,16 +169,18 @@ FROM(
 		tv.timetableversioncode = pj.timetableversioncode AND
 		tv.periodgroupcode = pj.periodgroupcode AND
 		tv.specificdaycode = pj.specificdaycode) as calendar
-	) as calendar_dates
+	) as calendar_dates,version as v
 WHERE
-position( CAST(CASE WHEN extract(dow from date) = 0 THEN 7 ELSE extract(dow from date) END as text) in daytype) != 0
+position( CAST(CASE WHEN extract(dow from date) = 0 THEN 7 ELSE extract(dow from date) END as text) in daytype) != 0 AND
+v.version = calendar_dates.version AND date between v.validfrom and v.validthru
 AND NOT EXISTS (
   SELECT 1 FROM (select cast(validdate as date) as excopdate,left(cast(daytypeason as text),1) as daytypeason from excopday) as excopday
   WHERE date = excopdate and position( CAST(CASE WHEN extract(dow from date) = 0 THEN 7 ELSE extract(dow from date) END as text) in daytypeason) = 0
-  )
+  ) AND
+date >= date 'yesterday'
 UNION
 SELECT
-version||'|'||dataownercode||'|'||timetableversioncode||'|'||organizationalunitcode||'|'||periodgroupcode||'|'||specificdaycode||'|'||daytype AS service_id,
+x.version||'|'||v.dataownercode||'|'||timetableversioncode||'|'||organizationalunitcode||'|'||periodgroupcode||'|'||specificdaycode||'|'||daytype AS service_id,
 replace(cast(date as text), '-', '') as date,
 1 as exception_type
 FROM(
@@ -215,9 +219,12 @@ FROM(
 		) as dates,
                  (select cast(validdate as date) as excopdate,left(cast(daytypeason as text),1) as daytypeason from excopday) as excopday
 	WHERE
-                excopdate = date) as x
+                excopdate = date) as x,version as v
 WHERE
-daytype is not null
+daytype is not null AND
+date >= date 'yesterday' AND
+x.version = v.version AND
+v.version = x.version AND date between v.validfrom and v.validthru
 ) TO '/tmp/calendar_dates.txt' WITH CSV HEADER;
 
 -- GTFS: trips.txt (Geldigheden en rijtijdgroepen)
