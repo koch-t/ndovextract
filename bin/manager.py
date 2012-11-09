@@ -225,6 +225,7 @@ def main():
         path, filename = os.path.split(opts.addfile)
         conn = psycopg2.connect("dbname='%s'" % (opts.database))
         importfile(conn,path,filename,1,None)
+        purge(conn)
         conn.close()
     elif opts.addfolder:
         files = os.listdir(opts.addfolder)
@@ -232,6 +233,7 @@ def main():
         conn = psycopg2.connect("dbname='%s'" % (opts.database))
         for file in files:
             importfile(conn,opts.addfolder,file,1,None)
+        purge(conn)
         conn.close()
     elif opts.kv1index:
         conn = psycopg2.connect("dbname='%s'" % (opts.database))
