@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 #Mirror KV1 zipfiles using a KV1index file
 import sys
 import os
