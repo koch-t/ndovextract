@@ -34,7 +34,7 @@ def cleandelta(conn):
 
 def metadata(schedule):
     lines = schedule.split('\r\n')
-    if lines[0].split('|')[1] == 'VersionNumber':
+    if lines[0].split('|')[1] in ['VersionNumber','VERSIONNUMBER']:
         firstline = 1
     else:
         firstline = 0
@@ -55,7 +55,7 @@ def importzip(conn,filename,zipfile):
     cur = conn.cursor()
 
     meta = metadata(zipfile.read(files['OPERDAY']))
-    header = (zipfile.read(files['DEST']).split('\r\n')[0].split('|')[1] == 'VersionNumber')
+    header = (zipfile.read(files['DEST']).split('\r\n')[0].split('|')[1] in ['VersionNumber','VERSIONNUMBER'])
     encoding = encodingof(meta['DataOwnerCode'])
     for table in importorder:
         if table in files:
