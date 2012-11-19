@@ -5,8 +5,9 @@ import os
 import optparse
 from lxml import etree
 import urllib2
+from kv1compress import generatetimedemandgroups
 
-importorder = ['DEST','LINE','CONAREA','CONFINREL','USRSTAR','USRSTOP','POINT','TILI','LINK','POOL','JOPA','JOPATILI','ORUN','ORUNORUN','SPECDAY','PEGR','EXCOPDAY','PEGRVAL','TIVE','TIMDEMGRP','TIMDEMRNT','PUJO','SCHEDVERS','PUJOPASS','OPERDAY']
+importorder = ['DEST','LINE','CONAREA','CONFINREL','USRSTAR','USRSTOP','POINT','TILI','LINK','POOL','JOPA','JOPATILI','ORUN','ORUNORUN','SPECDAY','PEGR','EXCOPDAY','PEGRVAL','TIVE','TIMDEMGRP','TIMDEMRNT','SCHEDPUJO','PUJO','SCHEDVERS','PUJOPASS','OPERDAY']
 
 def table(filename):
     filename = filename.split('.TMI')[0]
@@ -112,7 +113,7 @@ def fileimported(conn,key,dataownerversion):
     finally:
         cur.close()
 
-def importfile(conn,path,filename,dataownerversion,key):
+def importfile(conn,path,filename,dataownerversion,key,compress=False):
     if path is None or path == '':
         path = '.'  
     cleandelta(conn)
@@ -130,6 +131,8 @@ def importfile(conn,path,filename,dataownerversion,key):
         meta['Key'] = key
     meta['DataOwnerVersion'] = dataownerversion
     setversion(conn,meta)
+    if compress:
+        generatetimedemandgroups(conn,delta=True)
     mergedelta(meta['DataOwnerCode'],conn)
     cleandelta(conn)
     purge(conn)
@@ -175,7 +178,7 @@ def deletedelta(conn,key):
     cur.close()
     conn.commit()
 
-def sync(conn,kv1index):
+def sync(conn,kv1index,compress=False):
     tree = etree.parse(kv1index)
     index = []
     for periode in tree.findall('periode'):
@@ -196,7 +199,7 @@ def sync(conn,kv1index):
             print 'Import file %s version %s' % (f['filename'],str(f['dataownerversion']))
             url = '/'.join(kv1index.strip().split('/')[:-1])+'/'+f['filename']
             downloadfile(f['filename'],url)
-            importfile(conn,'/tmp',f['filename'],f['dataownerversion'],f['key'])
+            importfile(conn,'/tmp',f['filename'],f['dataownerversion'],f['key'],compress)
 
 def main():
     usage = "usage: %prog [options]"
@@ -221,6 +224,10 @@ def main():
                     action="store",
                     default=False,
                     help="Sync with KV1index feed online")
+    parser.add_option("-c", "--compress", dest="compress",
+                    action="store",
+                    default=False,
+                    help="Generate timedemandgroupcodes")
     opts, args = parser.parse_args()
     if not opts.database:
         print "Name of the database is mandatory"
@@ -241,12 +248,12 @@ def main():
         files.sort(key=lambda f: os.path.getmtime(os.path.join(opts.addfolder, f)))
         conn = psycopg2.connect("dbname='%s'" % (opts.database))
         for file in files:
-            importfile(conn,opts.addfolder,file,1,None)
+            importfile(conn,opts.addfolder,file,1,None,opts.compress)
         purge(conn)
         conn.close()
     elif opts.kv1index:
         conn = psycopg2.connect("dbname='%s'" % (opts.database))
-        sync(conn,opts.kv1index);
+        sync(conn,opts.kv1index,opts.compress);
         conn.close()
 if __name__ == '__main__':
     main()
