@@ -7,7 +7,7 @@ from lxml import etree
 import urllib2
 from kv1compress import generatetimedemandgroups
 
-importorder = ['DEST','LINE','CONAREA','CONFINREL','USRSTAR','USRSTOP','POINT','TILI','LINK','POOL','JOPA','JOPATILI','ORUN','ORUNORUN','SPECDAY','PEGR','EXCOPDAY','PEGRVAL','TIVE','TIMDEMGRP','TIMDEMRNT','SCHEDPUJO','PUJO','SCHEDVERS','PUJOPASS','OPERDAY']
+importorder = ['DEST','LINE','CONAREA','CONFINREL','POINT','USRSTAR','USRSTOP','TILI','LINK','POOL','JOPA','JOPATILI','ORUN','ORUNORUN','SPECDAY','PEGR','EXCOPDAY','PEGRVAL','TIVE','TIMDEMGRP','TIMDEMRNT','PUJO','SCHEDVERS','PUJOPASS','SCHEDPUJO','OPERDAY']
 
 def table(filename):
     filename = filename.split('.TMI')[0]
@@ -31,7 +31,7 @@ def cleandelta(conn):
     print 'Clear delta tables'
     for x in reversed(importorder):
         cur.execute("delete from %s_delta" % (x))
-    conn.commit()
+        conn.commit()
 
 def metadata(schedule):
     lines = schedule.split('\r\n')
@@ -79,15 +79,22 @@ def setversion(conn,meta):
         cur.execute("update %s_delta set version = (select last_value from version_version_seq)" % (x))
     conn.commit()
 
-def mergedelta(dataownercode,conn):
+def mergedelta(dataownercode,conn,hardcut):
     print 'merging delta into baseline'
     cur = conn.cursor()
-    if dataownercode not in ['HTM']: #HTM doesn't publish KV1 with overlap    
+    if not hardcut and dataownercode not in ['HTM']: #HTM doesn't publish KV1 with overlap    
         cur.execute("""
 DELETE FROM operday as o 
 WHERE EXISTS
 (    SELECT 1 FROM operday_delta as d WHERE o.organizationalunitcode = d.organizationalunitcode 
      AND o.dataownercode = d.dataownercode and o.validdate = d.validdate)
+""")
+    elif hardcut and dataownercode not in ['HTM']:
+        cur.execute("""
+DELETE FROM operday as o
+WHERE EXISTS
+(    SELECT 1 FROM operday_delta as d WHERE o.organizationalunitcode = d.organizationalunitcode
+     AND o.dataownercode = d.dataownercode and o.validdate <= d.validdate)
 """)
     for x in importorder:
         cur.execute("INSERT INTO %s (select * from %s_delta)" % (x,x))
@@ -113,7 +120,7 @@ def fileimported(conn,key,dataownerversion):
     finally:
         cur.close()
 
-def importfile(conn,path,filename,dataownerversion,key,compress=False):
+def importfile(conn,path,filename,dataownerversion,key,delta,compress=False):
     if path is None or path == '':
         path = '.'  
     cleandelta(conn)
@@ -130,10 +137,10 @@ def importfile(conn,path,filename,dataownerversion,key,compress=False):
     else: 
         meta['Key'] = key
     meta['DataOwnerVersion'] = dataownerversion
-    setversion(conn,meta)
     if compress:
         generatetimedemandgroups(conn,delta=True)
-    mergedelta(meta['DataOwnerCode'],conn)
+    setversion(conn,meta)
+    mergedelta(meta['DataOwnerCode'],conn,delta)
     cleandelta(conn)
     purge(conn)
 
@@ -199,7 +206,7 @@ def sync(conn,kv1index,compress=False):
             print 'Import file %s version %s' % (f['filename'],str(f['dataownerversion']))
             url = '/'.join(kv1index.strip().split('/')[:-1])+'/'+f['filename']
             downloadfile(f['filename'],url)
-            importfile(conn,'/tmp',f['filename'],f['dataownerversion'],f['key'],compress)
+            importfile(conn,'/tmp',f['filename'],f['dataownerversion'],f['key'],True,compress)
 
 def main():
     usage = "usage: %prog [options]"
@@ -225,9 +232,13 @@ def main():
                     default=False,
                     help="Sync with KV1index feed online")
     parser.add_option("-c", "--compress", dest="compress",
-                    action="store",
+                    action="store_true",
                     default=False,
                     help="Generate timedemandgroupcodes")
+    parser.add_option("-x", "--delta", dest="delta",
+                    action="store_true",
+                    default=False,
+                    help="With this mode the new KV1 is fit in the old KV1 instead of deleting everything from operday where validdate >= validfromnewkv1 ")
     opts, args = parser.parse_args()
     if not opts.database:
         print "Name of the database is mandatory"
@@ -240,7 +251,7 @@ def main():
     if opts.addfile:
         path, filename = os.path.split(opts.addfile)
         conn = psycopg2.connect("dbname='%s'" % (opts.database))
-        importfile(conn,path,filename,1,None)
+        importfile(conn,path,filename,1,None,opts.delta,opts.compress)
         purge(conn)
         conn.close()
     elif opts.addfolder:
@@ -248,7 +259,7 @@ def main():
         files.sort(key=lambda f: os.path.getmtime(os.path.join(opts.addfolder, f)))
         conn = psycopg2.connect("dbname='%s'" % (opts.database))
         for file in files:
-            importfile(conn,opts.addfolder,file,1,None,opts.compress)
+            importfile(conn,opts.addfolder,file,1,None,opts.delta,opts.compress)
         purge(conn)
         conn.close()
     elif opts.kv1index:

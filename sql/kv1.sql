@@ -16,8 +16,53 @@ CREATE TABLE "purgedversion" (
     "dataownerversion" integer NOT NULL,
     PRIMARY KEY ("version", "dataownercode")
 );
-
-
+CREATE TABLE SCHEDPUJO (
+    "tablename" VARCHAR(10) NOT NULL,
+    version integer NOT NULL,
+    implicit CHAR(1) NOT NULL,
+    dataownercode character varying(10) NOT NULL,
+    organizationalunitcode character varying(10) NOT NULL,
+    schedulecode character varying(10) NOT NULL,
+    scheduletypecode character varying(10) NOT NULL,
+    lineplanningnumber character varying(10) NOT NULL,
+    journeynumber numeric(6,0) NOT NULL,
+   "timedemandgroupcode" VARCHAR(10) NOT NULL,
+    journeypatterncode character varying(10) NOT NULL,
+    departuretime char(8),
+    wheelchairaccessible VARCHAR(13),
+    dataownerisoperator boolean NOT NULL,
+    PRIMARY KEY (version, dataownercode, organizationalunitcode, schedulecode, scheduletypecode, lineplanningnumber, journeynumber),
+    FOREIGN KEY (version, dataownercode, organizationalunitcode, schedulecode, scheduletypecode) REFERENCES schedvers(version, dataownercode,
+organizationalunitcode, schedulecode, scheduletypecode),
+    FOREIGN KEY ("version", "dataownercode", "lineplanningnumber", "journeypatterncode", "timedemandgroupcode") REFERENCES "timdemgrp"
+("version", "dataownercode", "lineplanningnumber", "journeypatterncode", "timedemandgroupcode"),
+    FOREIGN KEY (version, dataownercode, lineplanningnumber, journeypatterncode) REFERENCES jopa(version, dataownercode, lineplanningnumber,
+journeypatterncode),
+    FOREIGN KEY ("version", "dataownercode") REFERENCES "version" ("version", "dataownercode") ON DELETE CASCADE
+);
+CREATE TABLE SCHEDPUJO_delta (
+    "tablename" VARCHAR(10) NOT NULL,
+    version integer NOT NULL,
+    implicit CHAR(1) NOT NULL,
+    dataownercode character varying(10) NOT NULL,
+    organizationalunitcode character varying(10) NOT NULL,
+    schedulecode character varying(10) NOT NULL,
+    scheduletypecode character varying(10) NOT NULL,
+    lineplanningnumber character varying(10) NOT NULL,
+    journeynumber numeric(6,0) NOT NULL,
+   "timedemandgroupcode" VARCHAR(10) NOT NULL,
+    journeypatterncode character varying(10) NOT NULL,
+    departuretime char(8),
+    wheelchairaccessible VARCHAR(13),
+    dataownerisoperator boolean NOT NULL,
+    PRIMARY KEY (dataownercode, organizationalunitcode, schedulecode, scheduletypecode, lineplanningnumber, journeynumber),
+    FOREIGN KEY (dataownercode, organizationalunitcode, schedulecode, scheduletypecode) REFERENCES schedvers_delta(dataownercode,organizationalunitcode, 
+schedulecode, scheduletypecode),
+    FOREIGN KEY ("dataownercode", "lineplanningnumber", "journeypatterncode", "timedemandgroupcode") REFERENCES "timdemgrp_delta"
+("dataownercode", "lineplanningnumber", "journeypatterncode", "timedemandgroupcode"),
+    FOREIGN KEY (dataownercode, lineplanningnumber, journeypatterncode) REFERENCES jopa_delta(dataownercode, lineplanningnumber,
+journeypatterncode)
+);
 CREATE TABLE "dest" (
 	"tablename"         VARCHAR(10)   NOT NULL,
 	"version"                INTEGER    NOT NULL,

@@ -1,7 +1,7 @@
 #!/bin/bash
 cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DATE=$(date +'%Y%m%d')
-python manager.py -d kv1arr -f ../kv1feeds/arriva
+python manager.py -c -d kv1arr -f ../kv1feeds/arriva
 rm -rf /tmp/*.txt
 psql -d kv1arr -f ../sql/gtfs-shapes-arriva.sql
 psql -d kv1arr -f ../sql/gtfs-shapes-passtimes.sql

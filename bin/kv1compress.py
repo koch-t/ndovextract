@@ -50,9 +50,6 @@ journeypatterncode),
 );
 """
 
-timdemrnt = {}
-pujo = []
-
 def timediff(timelow,timehigh):
     hourslow,minlow,secslow = timelow.split(':')
     hourshigh,minhigh,secshigh =  timehigh.split(':')
@@ -69,7 +66,7 @@ def equals(timdemgrpleft,timdemgrpright):
                 return False
     return True
 
-def merge(timdem_pk,timdemgrp):
+def merge(timdemrnt,timdem_pk,timdemgrp):
     for groupcode,value in timdemrnt[timdem_pk].items():
         if equals(value,timdemgrp):
             return groupcode
@@ -82,6 +79,7 @@ def merge(timdem_pk,timdemgrp):
 
 
 def generatetimedemandgroups(conn,delta=False):
+    conn.commit()
     timdemrnt = {}
     pujo = []
     if delta:
@@ -123,7 +121,7 @@ version, dataownercode, organizationalunitcode, schedulecode, scheduletypecode, 
             timdemrnt[timdem_pk] = { 0 : timdemgrp}
             timdemgroupcode = 0
         else:
-            timdemgroupcode = merge(timdem_pk,timdemgrp)
+            timdemgroupcode = merge(timdemrnt,timdem_pk,timdemgrp)
         pujo.insert(9,timdemgroupcode)
         pujof.write('|'.join(str(x) for x in pujo)+'\r\n')
         i += 1
@@ -155,5 +153,4 @@ version, dataownercode, organizationalunitcode, schedulecode, scheduletypecode, 
     pujof.close()
 
     cur.close()
-    conn.close()
 
