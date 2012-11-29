@@ -8,7 +8,7 @@ replace(cast(min(validfrom) AS text), '-', '') as feed_start_date,
 replace(cast(max(validthru) AS text), '-', '') as feed_end_date,
 now() as feed_version 
 FROM 
-version
+pegrval
 ) TO '/tmp/feed_info.txt' WITH CSV HEADER;
 
 COPY (
@@ -80,6 +80,7 @@ pool.distancesincestartoflink) AS shape_pt_sequence
     AND pool.pointcode = point.pointcode
     AND pool.version = point.version
 --    AND pool.transporttype = line.transporttype
+    AND jopatili.lineplanningnumber not in (select lineplanningnumber from line78)
   ORDER BY
            jopatili.version,
            jopatili.dataownercode,
@@ -144,7 +145,6 @@ INSERT INTO gtfs_route_type VALUES ('TRAIN', 2);
 INSERT INTO gtfs_route_type VALUES ('BUS', 3);
 INSERT INTO gtfs_route_type VALUES ('BOAT', 4);
 
-drop table gtfs_wheelchair_accessiblity;
 create table gtfs_wheelchair_accessibility (wheelchairaccessible varchar(13) primary key, wheelchair_accessible int4);
 insert into gtfs_wheelchair_accessibility values ('UNKNOWN', 0);
 insert into gtfs_wheelchair_accessibility values ('ACCESSIBLE', 1);
@@ -244,6 +244,7 @@ FROM(
 		tv.dataownercode = pj.dataownercode AND
 		tv.timetableversioncode = pj.timetableversioncode AND
 		tv.periodgroupcode = pj.periodgroupcode AND
+                pv.organizationalunitcode not in (select lineplanningnumber from line78) AND
 		tv.specificdaycode = pj.specificdaycode) as calendar
 	) as calendar_dates,version as v
 WHERE
@@ -285,6 +286,7 @@ FROM(
 			where
 			pv.dataownercode = tv.dataownercode and
 			pv.organizationalunitcode = tv.organizationalunitcode and
+                        pv.organizationalunitcode not in (select lineplanningnumber from line78) AND
 			pv.periodgroupcode = tv.periodgroupcode AND
 			pv.version = tv.version AND
 			tv.version = pj.version AND
@@ -334,7 +336,8 @@ WHERE
  jt.destcode = d.destcode AND
  jt.version = d.version AND
  p.wheelchairaccessible = g.wheelchairaccessible AND
- p.dataownerisoperator= true
+ p.lineplanningnumber not in (select lineplanningnumber from line78) AND
+ p.dataownerisoperator = true
 ) TO '/tmp/trips.txt' WITH CSV HEADER;
 
 COPY (
@@ -361,7 +364,8 @@ p.journeypatterncode = j.journeypatterncode AND
 p.version = u.version AND
 userstopcodebegin = u.userstopcode AND
 u.userstoptype = 'PASSENGER' AND
-p.dataownerisoperator = true 
+p.lineplanningnumber not in (select lineplanningnumber from line78) AND
+p.dataownerisoperator = true
 UNION
 SELECT
  p.version||'|'||p.dataownercode||'|'||p.periodgroupcode||'|'||p.daytype||'|'||p.lineplanningnumber||'|'||p.journeynumber AS trip_id,
@@ -370,7 +374,7 @@ p.dataownercode||'|'||t.userstopcodeend as stop_id,
 add32time(departuretime,totaldrivetime) as arrival_time,
 add32time(departuretime,cast((totaldrivetime+stopwaittime)as integer)) as departure_time,
 CASE WHEN (productformulatype in (2,35,36)) THEN 3 ELSE cast(not getin as integer) END as pickup_type,
-CASE WHEN (productformulatype in (2,35,36)) THEN 3 ELSE cast(not getout as integer) END as drop_off_type
+CASE WHEN (productformulatype in (2,35,36)) THEN 3 ELSE cast(not getout as integer) END as drop_off_type 
 FROM
 pujo as p, timdempass as t, usrstop as u,jopatili as j
 WHERE
@@ -378,6 +382,7 @@ p.version = t.version AND
 p.dataownercode = t.dataownercode AND
 p.lineplanningnumber = t.lineplanningnumber AND
 p.journeypatterncode = t.journeypatterncode AND
+p.lineplanningnumber not in (select lineplanningnumber from line78) AND
 p.timedemandgroupcode = t.timedemandgroupcode AND
 p.version = u.version AND
 t.userstopcodeend = u.userstopcode AND
