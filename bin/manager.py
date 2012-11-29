@@ -79,17 +79,20 @@ def setversion(conn,meta):
         cur.execute("update %s_delta set version = (select last_value from version_version_seq)" % (x))
     conn.commit()
 
-def mergedelta(dataownercode,conn,hardcut):
-    print 'merging delta into baseline'
+def mergedelta(dataownercode,conn,delta):
+    if delta:
+        print 'Merging delta in to the baseline'
+    else:
+        print 'Merging KV1'
     cur = conn.cursor()
-    if not hardcut and dataownercode not in ['HTM']: #HTM doesn't publish KV1 with overlap    
+    if delta and dataownercode not in ['HTM']: #HTM doesn't publish KV1 with overlap    
         cur.execute("""
 DELETE FROM operday as o 
 WHERE EXISTS
 (    SELECT 1 FROM operday_delta as d WHERE o.organizationalunitcode = d.organizationalunitcode 
      AND o.dataownercode = d.dataownercode and o.validdate = d.validdate)
 """)
-    elif hardcut and dataownercode not in ['HTM']:
+    elif not delta and dataownercode not in ['HTM']:
         cur.execute("""
 DELETE FROM operday as o
 WHERE EXISTS
