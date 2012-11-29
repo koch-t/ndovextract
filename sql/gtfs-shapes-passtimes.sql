@@ -74,16 +74,66 @@ insert into gtfs_wheelchair_accessibility values ('NOTACCESSIBLE', 2);
 alter table line add column transporttype VARCHAR(5);
 update line set transporttype = CASE WHEN (linepublicnumber = 'FF') THEN 'BOAT' ELSE 'BUS' END where transporttype is null;
 
+drop table productformula;
+CREATE TABLE productformula (productformulatype decimal(4) primary key, localized_route_type varchar(20));
+insert into productformula VALUES(1,'Buurtbus');
+insert into productformula VALUES(2,'Belbus');
+insert into productformula VALUES(3,'Express-bus');
+insert into productformula VALUES(4,'Fast Ferry');
+insert into productformula VALUES(5,'Hanze-Liner');
+insert into productformula VALUES(6,'Interliner');
+insert into productformula VALUES(7,'Kamperstadslijn');
+insert into productformula VALUES(8,'Lijntaxi');
+insert into productformula VALUES(9,'Media express');
+insert into productformula VALUES(10,'MAXX');
+insert into productformula VALUES(11,'Natuurexpress');
+insert into productformula VALUES(12,'Niteliner');
+insert into productformula VALUES(13,'Q-liner');
+insert into productformula VALUES(14,'Regioliner');
+insert into productformula VALUES(15,'Servicebus');
+insert into productformula VALUES(16,'Sneldienst');
+insert into productformula VALUES(17,'Spitsbus');
+insert into productformula VALUES(19,'Sternet');
+insert into productformula VALUES(20,'Sneltram');
+insert into productformula VALUES(21,'Tram');
+insert into productformula VALUES(22,'Vierdaagse');
+insert into productformula VALUES(23,'Waterbus');
+insert into productformula VALUES(24,'Zuidtangent');
+insert into productformula VALUES(25,'Stoptrein');
+insert into productformula VALUES(26,'Sneltrein');
+insert into productformula VALUES(27,'Intercity');
+insert into productformula VALUES(28,'Sprinter');
+insert into productformula VALUES(29,'Internationale Trein');
+insert into productformula VALUES(30,'HSL Zuid');
+insert into productformula VALUES(31,'ICE');
+insert into productformula VALUES(32,'Thalys');
+insert into productformula VALUES(33,'Valleilijn');
+insert into productformula VALUES(34,'Breng');
+insert into productformula VALUES(35,'Opstapper');
+insert into productformula VALUES(36,'Overstapper');
+insert into productformula VALUES(37,'R-NET');
+insert into productformula VALUES(38,'Parkshuttle');
+insert into productformula VALUES(39,'FC-Utrecht Express');
+
 COPY (
-SELECT DISTINCT ON (dataownercode,lineplanningnumber)
-dataownercode||'|'||lineplanningnumber AS route_id,
-dataownercode AS agency_id,
+SELECT DISTINCT ON (line.dataownercode,line.lineplanningnumber)
+line.dataownercode||'|'||line.lineplanningnumber AS route_id,
+line.dataownercode AS agency_id,
 linepublicnumber AS route_short_name,
 linename AS route_long_name,
-route_type AS route_type
-FROM line, gtfs_route_type
-WHERE coalesce(line.transporttype,'BUS') = gtfs_route_type.transporttype
-ORDER BY dataownercode,lineplanningnumber,version DESC
+route_type AS route_type,
+localized_route_type
+FROM gtfs_route_type,line,
+-- Could cause some wrong productformula as we're looking at the whole line and productformula can differ per journeypttern
+(select distinct version,dataownercode,lineplanningnumber,productformulatype from jopatili) as pf LEFT JOIN productformula USING 
+(productformulatype)
+WHERE 
+coalesce(line.transporttype,'BUS') = gtfs_route_type.transporttype AND 
+line.transporttype != 'TRAIN' AND
+pf.version = line.version AND
+pf.dataownercode = line.dataownercode AND
+pf.lineplanningnumber = line.lineplanningnumber
+ORDER BY line.dataownercode,line.lineplanningnumber,line.version DESC
 ) TO '/tmp/routes.txt' WITH CSV HEADER;
 
 
@@ -164,7 +214,8 @@ p.version = v.version AND
 p.dataownercode = v.dataownercode AND
 p.organizationalunitcode = v.organizationalunitcode AND
 p.schedulecode = v.schedulecode AND
-p.scheduletypecode = v.scheduletypecode
+p.scheduletypecode = v.scheduletypecode AND
+j.dataownercode||'|'||j.lineplanningnumber not in (select dataownercode||'|'||lineplanningnumber from line where transporttype = 'TRAIN')  
 ) TO '/tmp/trips.txt' WITH CSV HEADER;
 
 -- workaround for some KV1
@@ -193,5 +244,6 @@ p.version = v.version AND
 p.dataownercode = v.dataownercode AND
 p.organizationalunitcode = v.organizationalunitcode AND
 p.schedulecode = v.schedulecode AND
-p.scheduletypecode = v.scheduletypecode
+p.scheduletypecode = v.scheduletypecode AND
+p.dataownercode||'|'||p.lineplanningnumber not in (select dataownercode||'|'||lineplanningnumber from line where transporttype = 'TRAIN')
 )TO '/tmp/stop_times.txt' WITH CSV HEADER;

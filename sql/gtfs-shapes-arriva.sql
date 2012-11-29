@@ -36,7 +36,9 @@ pool.distancesincestartoflink) AS shape_pt_sequence
     and jopatili.version = line.version
     AND pool.pointdataownercode = point.dataownercode
     AND pool.pointcode = point.pointcode
-    AND pool.version = point.version
+    AND pool.version = point.version AND
+    jopatili.dataownercode||'|'||jopatili.lineplanningnumber not in (select dataownercode||'|'||lineplanningnumber from line where transporttype = 
+'TRAIN')
     --AND pool.transporttype = line.transporttype
   ORDER BY
            jopatili.version,
