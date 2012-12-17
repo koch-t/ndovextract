@@ -1,6 +1,7 @@
 import zipfile
 import psycopg2
 import sys
+from datetime import datetime,timedelta
 import os
 import optparse
 from lxml import etree
@@ -54,8 +55,9 @@ def importzip(conn,filename,zipfile):
     print 'Import ' + filename
     files = filelist(zipfile)
     cur = conn.cursor()
-
     meta = metadata(zipfile.read(files['OPERDAY']))
+    if datetime.strptime(meta['ValidThru'].replace('-',''),'%Y%m%d') < (datetime.now() - timedelta(days=1)):
+        return meta
     header = (zipfile.read(files['DEST']).split('\r\n')[0].split('|')[1] in ['VersionNumber','VERSIONNUMBER'])
     encoding = encodingof(meta['DataOwnerCode'])
     for table in importorder:
@@ -87,17 +89,16 @@ def mergedelta(dataownercode,conn,delta):
     cur = conn.cursor()
     if delta and dataownercode not in ['HTM']: #HTM doesn't publish KV1 with overlap    
         cur.execute("""
-DELETE FROM operday as o 
+DELETE FROM operday as o
 WHERE EXISTS
-(    SELECT 1 FROM operday_delta as d WHERE o.organizationalunitcode = d.organizationalunitcode 
-     AND o.dataownercode = d.dataownercode and o.validdate = d.validdate)
+( SELECT 1 FROM operday_delta as d WHERE o.organizationalunitcode = d.organizationalunitcode
+AND o.dataownercode = d.dataownercode and o.validdate = d.validdate)
 """)
     elif not delta and dataownercode not in ['HTM']:
         cur.execute("""
 DELETE FROM operday as o
-WHERE EXISTS
-(    SELECT 1 FROM operday_delta as d WHERE o.organizationalunitcode = d.organizationalunitcode
-     AND o.dataownercode = d.dataownercode and o.validdate <= d.validdate)
+WHERE validdate >=
+( SELECT min(validdate) FROM operday_delta as d WHERE o.organizationalunitcode = d.organizationalunitcode AND o.dataownercode = d.dataownercode)
 """)
     for x in importorder:
         cur.execute("INSERT INTO %s (select * from %s_delta)" % (x,x))
