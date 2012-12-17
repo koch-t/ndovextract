@@ -1,3 +1,8 @@
+--Some old prodform modifications
+update jopatili set productformulatype = 1 where dataownercode = 'VTN' and deprecated = 'buur';
+update jopatili set productformulatype = 2 where dataownercode = 'VTN' and deprecated = 'belb';
+update jopatili set productformulatype = 1 where dataownercode = 'ARR' and deprecated = 'Bubu';
+
 -- GTFS: feed_info.txt
 COPY (
 SELECT
@@ -172,6 +177,11 @@ insert into gtfs_route_bikes_allowed values ('CXX','Z020',2);
 insert into gtfs_route_bikes_allowed values ('CXX','Z050',2);
 insert into gtfs_route_bikes_allowed values ('CXX','Z060',2);
 insert into gtfs_route_bikes_allowed values ('VTN','26',2);
+
+insert into gtfs_route_bikes_allowed values ('ARR','17090',2);
+insert into gtfs_route_bikes_allowed values ('ARR','17194',2);
+insert into gtfs_route_bikes_allowed values ('ARR','17196',2);
+
 
 -- GTFS: trips.txt (Schedules en passeertijden)
 --
