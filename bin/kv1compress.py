@@ -51,6 +51,9 @@ journeypatterncode),
 """
 
 def timediff(timelow,timehigh):
+    if len(timelow.split(':')) == 2:
+        timelow = timelow   + ':00'
+        timehigh = timehigh + ':00'
     hourslow,minlow,secslow = timelow.split(':')
     hourshigh,minhigh,secshigh =  timehigh.split(':')
     low = (int(hourslow) * 60 * 60) + (int(minlow) * 60) + int(secslow)
