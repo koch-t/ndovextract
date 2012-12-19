@@ -6,7 +6,7 @@ USERNAME=gebruikertje
 PASSWORD=geheimpje
 #rm /tmp/*.txt
 
-wget --user=$USERNAME --password=$PASSWORD http://data.ndovloket.nl/ns/Open_Geo_51_52_01_02.zip -O /tmp/iffns.zip
+wget --user=$USERNAME --password=$PASSWORD http://data.ndovloket.nl/ns/ns-latest.zip -O /tmp/iffns.zip
 mkdir /tmp/iff/
 unzip /tmp/iffns.zip -d /tmp/iff
 
