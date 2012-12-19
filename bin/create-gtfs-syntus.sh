@@ -2,7 +2,7 @@
 cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 DATE=$(date +'%Y%m%d')
-#wget ../kv1feeds/syntus -N --accept=zip -q -P ../kv1feeds/syntus -nd -r http://kv1.openov.nl/syntus/ -l 1
+wget ../kv1feeds/syntus -N --accept=zip -q -P ../kv1feeds/syntus -nd -r http://kv1.openov.nl/syntus/ -l 1
 python manager.py -c -d kv1syntus -f ../kv1feeds/syntus
 psql -d kv1syntus -f ../sql/gtfs-shapes-syntus.sql
 psql -d kv1syntus -f ../sql/gtfs-shapes-passtimes.sql
