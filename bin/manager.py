@@ -9,6 +9,7 @@ import urllib2
 from kv1compress import generatetimedemandgroups
 
 importorder = ['DEST','LINE','CONAREA','CONFINREL','POINT','USRSTAR','USRSTOP','TILI','LINK','POOL','JOPA','JOPATILI','ORUN','ORUNORUN','SPECDAY','PEGR','EXCOPDAY','PEGRVAL','TIVE','TIMDEMGRP','TIMDEMRNT','PUJO','SCHEDVERS','PUJOPASS','SCHEDPUJO','OPERDAY']
+versionheaders = ['Version_Number','VersionNumber','VERSIONNUMBER']
 
 def table(filename):
     filename = filename.split('.TMI')[0]
@@ -36,7 +37,7 @@ def cleandelta(conn):
 
 def metadata(schedule):
     lines = schedule.split('\r\n')
-    if lines[0].split('|')[1] in ['Version_Number','VersionNumber','VERSIONNUMBER']:
+    if lines[0].split('|')[1] in versionheaders:
         firstline = 1
     else:
         firstline = 0
@@ -58,7 +59,7 @@ def importzip(conn,filename,zipfile):
     meta = metadata(zipfile.read(files['OPERDAY']))
     if datetime.strptime(meta['ValidThru'].replace('-',''),'%Y%m%d') < (datetime.now() - timedelta(days=1)):
         return meta
-    header = (zipfile.read(files['DEST']).split('\r\n')[0].split('|')[1] in ['Version_Number','VersionNumber','VERSIONNUMBER'])
+    header = (zipfile.read(files['DEST']).split('\r\n')[0].split('|')[1] in versionheaders)
     encoding = encodingof(meta['DataOwnerCode'])
     for table in importorder:
         if table in files:
