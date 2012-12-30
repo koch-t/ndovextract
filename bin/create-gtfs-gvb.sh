@@ -2,7 +2,11 @@
 cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DATE=$(date +'%Y%m%d')
 python manager.py -x -d kv1gvb -c -s http://195.193.209.12/gvbpublicatieinternet/KV1/KV1index.xml
+status=$?
 rm -rf /tmp/*.txt
+if [ $status != 0 ];
+then exit 1
+fi
 psql -d kv1gvb -f ../sql/gtfs-shapes-gvb.sql
 psql -d kv1gvb -f ../sql/gtfs-shapes-passtimes.sql
 zip -j ../gtfs/gvb/gtfs-kv1gvb-$DATE.zip /tmp/*.txt
