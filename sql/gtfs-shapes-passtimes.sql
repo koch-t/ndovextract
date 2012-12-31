@@ -125,7 +125,7 @@ SELECT DISTINCT ON (line.dataownercode,line.lineplanningnumber)
 line.dataownercode||'|'||line.lineplanningnumber AS route_id,
 line.dataownercode AS agency_id,
 linepublicnumber AS route_short_name,
-linename AS route_long_name,
+CASE WHEN (linepublicnumber <> linename) THEN linename ELSE NULL END AS route_long_name,
 route_type AS route_type,
 localized_route_type
 FROM gtfs_route_type,line,
