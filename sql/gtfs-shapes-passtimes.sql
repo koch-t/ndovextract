@@ -167,6 +167,7 @@ insert into gtfs_route_bikes_allowed values ('GVB','904',2);
 insert into gtfs_route_bikes_allowed values ('GVB','905',2);
 insert into gtfs_route_bikes_allowed values ('GVB','906',2);
 insert into gtfs_route_bikes_allowed values ('GVB','907',2);
+insert into gtfs_route_bikes_allowed values ('GVB','26',2);
 insert into gtfs_route_bikes_allowed values ('GVB','50',2);
 insert into gtfs_route_bikes_allowed values ('GVB','51',2);
 insert into gtfs_route_bikes_allowed values ('GVB','52',2);
