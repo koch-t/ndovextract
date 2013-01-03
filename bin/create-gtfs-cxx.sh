@@ -16,3 +16,6 @@ ln -s gtfs-kv1connexxion-$DATE.zip ../gtfs/connexxion/gtfs-kv1connexxion-latest.
 #Validate using Google TransitFeed
 python transitfeed/feedvalidator.py ../gtfs/connexxion/gtfs-kv1connexxion-$DATE.zip -o ../gtfs/connexxion/gtfs-kv1connexxion-$DATE.html -l 50000 --error_types_ignore_list=ExpirationDate,FutureService
 python transitfeed/kmlwriter.py ../gtfs/connexxion/gtfs-kv1connexxion-$DATE.zip
+zip -j ../gtfs/connexxion/gtfs-kv1connexxion-$DATE.kmz ../gtfs/connexion/gtfs-kv1connexxion-$DATE.kml
+rm ../gtfs/connexxion/gtfs-kv1connexxion-$DATE.kml
+

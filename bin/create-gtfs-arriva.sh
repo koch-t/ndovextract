@@ -2,6 +2,11 @@
 cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DATE=$(date +'%Y%m%d')
 python manager.py -c -d kv1arr -f ../kv1feeds/arriva
+status=$?
+rm -rf /tmp/*.txt
+if [ $status != 0 ];
+then exit 1
+fi
 rm -rf /tmp/*.txt
 psql -d kv1arr -f ../sql/gtfs-shapes-arriva.sql
 psql -d kv1arr -f ../sql/gtfs-shapes-passtimes.sql

@@ -4,6 +4,12 @@ cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DATE=$(date +'%Y%m%d')
 wget ../kv1feeds/qbuzz -N --accept=zip -q -P ../kv1feeds/qbuzz -nd -r http://kv1.openov.nl/qbuzz/ -l 1
 python manager.py -c -d kv1qbuzz -f ../kv1feeds/qbuzz
+status=$?
+rm -rf /tmp/*.txt
+if [ $status != 0 ];
+then exit 1
+fi
+
 rm -rf /tmp/*.txt
 psql -d kv1qbuzz -f ../sql/gtfs-shapes-qbuzz.sql
 psql -d kv1qbuzz -f ../sql/gtfs-shapes-passtimes.sql
