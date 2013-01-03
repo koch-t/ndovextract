@@ -6,10 +6,12 @@ import os
 import optparse
 from lxml import etree
 import urllib2
+import logging
 from kv1compress import generatetimedemandgroups
 
 importorder = ['DEST','LINE','CONAREA','CONFINREL','POINT','USRSTAR','USRSTOP','TILI','LINK','POOL','JOPA','JOPATILI','ORUN','ORUNORUN','SPECDAY','PEGR','EXCOPDAY','PEGRVAL','TIVE','TIMDEMGRP','TIMDEMRNT','PUJO','SCHEDVERS','PUJOPASS','SCHEDPUJO','OPERDAY']
 versionheaders = ['Version_Number','VersionNumber','VERSIONNUMBER']
+log = logging.getLogger('ndovextract')
 
 def table(filename):
     filename = filename.split('.TMI')[0]
@@ -112,10 +114,13 @@ def purge(conn):
     cur = conn.cursor()
     cur.execute("UPDATE version SET validthru = (select max(validdate) from operday where version = version.version group by version);")
     conn.commit()
+    cur.execute("select true in (select (validthru < date 'yesterday' or validthru is null) FROM version);")
+    changed = cur.fetchone()[0]
     cur.execute("INSERT INTO purgedversion (SELECT * FROM version WHERE validthru < date 'yesterday' or validthru is null)")
     cur.execute("DELETE FROM version WHERE validthru < date 'yesterday' or validthru is null")
     cur.close()
     conn.commit()
+    return changed
 
 def fileimported(conn,key,dataownerversion):
     cur = conn.cursor()
@@ -131,7 +136,7 @@ def importfile(conn,path,filename,dataownerversion,key,delta,compress=False):
     cleandelta(conn)
     if fileimported(conn,filename,dataownerversion):
         print 'Same version of file %s already imported' % (filename)
-        return
+        return False
     zip = zipfile.ZipFile(path+'/'+filename,'r')
     if 'Csv.zip' in zip.namelist():
         zipfile.ZipFile.extract(zip,'Csv.zip','/tmp')
@@ -148,6 +153,7 @@ def importfile(conn,path,filename,dataownerversion,key,delta,compress=False):
     mergedelta(meta['DataOwnerCode'],conn,delta)
     cleandelta(conn)
     purge(conn)
+    return True
 
 def downloadfile(filename,url):
     u = urllib2.urlopen(url)
@@ -205,13 +211,16 @@ def sync(conn,kv1index,compress=False):
         file['validthru'] = periode.find('einddatum').text
         index.append(file)
     index = multikeysort(index, ['validfrom', '-validthru'])
+    changed = False
     for f in index:
         print 'key: '+f['key']+' filename: ' + f['filename'] + ' startdatum ' + f['validfrom'][0:10] + ' einddatum ' + f['validthru'][0:10] 
         if not fileimported(conn,f['key'],f['dataownerversion']) and f['ispublished'] == 'true':
             print 'Import file %s version %s' % (f['filename'],str(f['dataownerversion']))
             url = '/'.join(kv1index.strip().split('/')[:-1])+'/'+f['filename']
             downloadfile(f['filename'],url)
+            changed = True
             importfile(conn,'/tmp',f['filename'],f['dataownerversion'],f['key'],True,compress)
+    return changed
 
 def main():
     usage = "usage: %prog [options]"
@@ -245,6 +254,7 @@ def main():
                     default=False,
                     help="With this mode the new KV1 is fit in the old KV1 instead of deleting everything from operday where validdate >= validfromnewkv1 ")
     opts, args = parser.parse_args()
+    changed = False
     if not opts.database:
         print "Name of the database is mandatory"
         parser.print_help()
@@ -256,22 +266,23 @@ def main():
     if opts.addfile:
         path, filename = os.path.split(opts.addfile)
         conn = psycopg2.connect("dbname='%s'" % (opts.database))
-        importfile(conn,path,filename,1,None,opts.delta,opts.compress)
-        purge(conn)
+        changed = importfile(conn,path,filename,1,None,opts.delta,opts.compress)
+        changed = changed or purge(conn)
         conn.close()
     elif opts.addfolder:
         files = os.listdir(opts.addfolder)
         files.sort(key=lambda f: os.path.getmtime(os.path.join(opts.addfolder, f)))
         conn = psycopg2.connect("dbname='%s'" % (opts.database))
         for file in files:
-            importfile(conn,opts.addfolder,file,1,None,opts.delta,opts.compress)
-        purge(conn)
+            changed = changed or importfile(conn,opts.addfolder,file,1,None,opts.delta,opts.compress)
+        changed = changed or purge(conn)
         conn.close()
     elif opts.kv1index:
         conn = psycopg2.connect("dbname='%s'" % (opts.database))
-        sync(conn,opts.kv1index,opts.compress);
+        changed = sync(conn,opts.kv1index,opts.compress);
+        changed = changed or purge(conn)
         conn.close()
+    if not changed:
+        sys.exit(1)
 if __name__ == '__main__':
     main()
-
-
