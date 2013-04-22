@@ -9,7 +9,7 @@ then exit 1
 fi
 psql -d kv1gvb -f ../sql/gtfs-shapes-gvb.sql
 psql -d kv1gvb -f ../sql/gtfs-shapes-passtimes.sql
-zip -j ../gtfs/gvb/gtfs-kv1gvb-$DATE.zip /tmp/*.txt
+zip -j ../gtfs/gvb/gtfs-kv1gvb-$DATE.zip /tmp/agency.txt /tmp/calendar_dates.txt /tmp/feed_info.txt /tmp/routes.txt /tmp/stops.txt /tmp/stop_times.txt /tmp/trips.txt /tmp/shapes.txt
 rm ../gtfs/gvb/gtfs-kv1gvb-latest.zip
 ln -s gtfs-kv1gvb-$DATE.zip ../gtfs/gvb/gtfs-kv1gvb-latest.zip
 

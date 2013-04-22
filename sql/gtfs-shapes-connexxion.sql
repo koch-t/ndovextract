@@ -62,7 +62,7 @@ FROM
            pool.linkvalidfrom) 
   jopatili.version||'|'||jopatili.dataownercode||'|'||jopatili.lineplanningnumber||'|'||jopatili.journeypatterncode AS shape_id,
   ST_Transform(st_setsrid(st_makepoint(locationx_ew, locationy_ns), 28992), 4326) AS the_geom,
-  rank() over (PARTITION BY jopatili.version,jopatili.dataownercode, jopatili.lineplanningnumber, jopatili.journeypatterncode ORDER BY
+  row_number() over (PARTITION BY jopatili.version,jopatili.dataownercode, jopatili.lineplanningnumber, jopatili.journeypatterncode ORDER BY
 jopatili.version,jopatili.dataownercode, jopatili.lineplanningnumber, jopatili.journeypatterncode, jopatili.timinglinkorder,
 pool.distancesincestartoflink) AS shape_pt_sequence
   FROM jopatili,
@@ -337,11 +337,26 @@ WHERE
  p.dataownerisoperator= true
 ) TO '/tmp/trips.txt' WITH CSV HEADER;
 
-COPY (
+drop table gtfs_stop_times;
+
+create table gtfs_stop_times (
+    trip_id varchar(255),
+    stop_sequence integer,
+    stop_id varchar(255),
+    stop_headsign varchar(255),
+    arrival_time varchar(10),
+    departure_time varchar(10),
+    pickup_type int4,
+    drop_off_type int4,
+    primary key(trip_id,stop_sequence)
+);
+
+INSERT INTO gtfs_stop_times (
 SELECT
 p.version||'|'||p.dataownercode||'|'||p.periodgroupcode||'|'||p.daytype||'|'||p.lineplanningnumber||'|'||p.journeynumber AS trip_id,
-1 as stop_sequence,
+j.timinglinkorder as stop_sequence,
 p.dataownercode||'|'||userstopcodebegin as stop_id,
+NULL as stop_headsign,
 departuretime as arrival_time,
 departuretime as departure_time,
 CASE WHEN (productformulatype in (2,35,36)) THEN 3 ELSE cast(not getin as integer) END as pickup_type,
@@ -349,7 +364,7 @@ CASE WHEN (productformulatype in (2,35,36)) THEN 3 ELSE cast(not getout as integ
 FROM
 pujo as p, usrstop as u,
 ( SELECT DISTINCT ON (version,dataownercode,lineplanningnumber,journeypatterncode)
-  version,dataownercode,lineplanningnumber,journeypatterncode,userstopcodebegin,productformulatype
+  version,dataownercode,lineplanningnumber,journeypatterncode,userstopcodebegin,productformulatype,timinglinkorder
   FROM jopatili
   ORDER BY version,dataownercode,lineplanningnumber,journeypatterncode,timinglinkorder
  ) as j
@@ -361,31 +376,77 @@ p.journeypatterncode = j.journeypatterncode AND
 p.version = u.version AND
 userstopcodebegin = u.userstopcode AND
 u.userstoptype = 'PASSENGER' AND
-p.dataownerisoperator = true 
-UNION
+p.dataownerisoperator = true );
+
+INSERT INTO gtfs_stop_times (
 SELECT
- p.version||'|'||p.dataownercode||'|'||p.periodgroupcode||'|'||p.daytype||'|'||p.lineplanningnumber||'|'||p.journeynumber AS trip_id,
-(t.timinglinkorder + 2) as stop_sequence,
-p.dataownercode||'|'||t.userstopcodeend as stop_id,
+p.version||'|'||p.dataownercode||'|'||p.periodgroupcode||'|'||p.daytype||'|'||p.lineplanningnumber||'|'||p.journeynumber AS trip_id,
+j.timinglinkorder as stop_sequence,
+p.dataownercode||'|'||j.userstopcodebegin as stop_id,
+CASE WHEN (trip.destcode != j.destcode) THEN destnamefull ELSE NULL END as stop_headsign,
 add32time(departuretime,totaldrivetime) as arrival_time,
 add32time(departuretime,cast((totaldrivetime+stopwaittime)as integer)) as departure_time,
 CASE WHEN (productformulatype in (2,35,36)) THEN 3 ELSE cast(not getin as integer) END as pickup_type,
 CASE WHEN (productformulatype in (2,35,36)) THEN 3 ELSE cast(not getout as integer) END as drop_off_type
 FROM
-pujo as p, timdempass as t, usrstop as u,jopatili as j
-WHERE
+pujo as p, usrstop as u,timdempass as t,dest,jopatili as j LEFT JOIN
+( SELECT DISTINCT ON (version,dataownercode,lineplanningnumber,journeypatterncode)
+  version,dataownercode,lineplanningnumber,journeypatterncode,userstopcodebegin,destcode
+  FROM jopatili
+  ORDER BY version,dataownercode,lineplanningnumber,journeypatterncode,timinglinkorder
+ ) as trip USING (version,dataownercode,lineplanningnumber,journeypatterncode)
+WHERE 
 p.version = t.version AND
 p.dataownercode = t.dataownercode AND
 p.lineplanningnumber = t.lineplanningnumber AND
 p.journeypatterncode = t.journeypatterncode AND
 p.timedemandgroupcode = t.timedemandgroupcode AND
-p.version = u.version AND
-t.userstopcodeend = u.userstopcode AND
-u.userstoptype = 'PASSENGER' AND
-p.version = j.version AND
-p.dataownercode = j.dataownercode AND
-p.lineplanningnumber = j.lineplanningnumber AND
-p.journeypatterncode = j.journeypatterncode AND
-t.timinglinkorder = j.timinglinkorder AND
-p.dataownerisoperator = true
-) TO '/tmp/stop_times.txt' WITH CSV HEADER;
+j.version = t.version AND
+j.dataownercode = t.dataownercode AND
+j.lineplanningnumber = t.lineplanningnumber AND
+j.journeypatterncode = t.journeypatterncode AND
+j.timinglinkorder = t.timinglinkorder + 1 AND
+j.version = dest.version AND
+j.dataownercode = dest.dataownercode AND
+j.destcode = dest.destcode AND
+j.version = u.version AND
+j.dataownercode = u.dataownercode AND
+j.userstopcodebegin = u.userstopcode
+);
+
+INSERT INTO gtfs_stop_times(
+SELECT
+p.version||'|'||p.dataownercode||'|'||p.periodgroupcode||'|'||p.daytype||'|'||p.lineplanningnumber||'|'||p.journeynumber AS trip_id,
+j.timinglinkorder+1 as stop_sequence,
+p.dataownercode||'|'||j.userstopcodeend as stop_id,
+CASE WHEN (trip.destcode != j.destcode) THEN destnamefull ELSE NULL END as stop_headsign,
+add32time(departuretime,totaldrivetime) as arrival_time,
+add32time(departuretime,cast((totaldrivetime+stopwaittime)as integer)) as departure_time,
+CASE WHEN (productformulatype in (2,35,36)) THEN 3 ELSE 0 END as pickup_type,
+CASE WHEN (productformulatype in (2,35,36)) THEN 3 ELSE 0 END as drop_off_type
+FROM
+pujo as p,timdempass as t,
+( SELECT DISTINCT ON (version,dataownercode,lineplanningnumber,journeypatterncode)
+  version,dataownercode,lineplanningnumber,journeypatterncode,userstopcodeend,destcode,timinglinkorder,productformulatype
+  FROM jopatili
+  ORDER BY version ASC,dataownercode ASC,lineplanningnumber ASC,journeypatterncode ASC,timinglinkorder DESC
+ ) as j
+ LEFT JOIN dest using (version,dataownercode,destcode) LEFT JOIN 
+( SELECT DISTINCT ON (version,dataownercode,lineplanningnumber,journeypatterncode)
+  version,dataownercode,lineplanningnumber,journeypatterncode,userstopcodebegin,destcode
+  FROM jopatili
+  ORDER BY version,dataownercode,lineplanningnumber,journeypatterncode,timinglinkorder
+ ) as trip USING (version,dataownercode,lineplanningnumber,journeypatterncode)
+WHERE 
+p.version = t.version AND
+p.dataownercode = t.dataownercode AND
+p.lineplanningnumber = t.lineplanningnumber AND
+p.journeypatterncode = t.journeypatterncode AND
+p.timedemandgroupcode = t.timedemandgroupcode AND
+j.version = t.version AND
+j.dataownercode = t.dataownercode AND
+j.lineplanningnumber = t.lineplanningnumber AND
+j.journeypatterncode = t.journeypatterncode AND
+j.timinglinkorder = t.timinglinkorder
+);
+COPY (select * from gtfs_stop_times ORDER BY trip_id,stop_sequence) TO '/tmp/stop_times.txt' WITH CSV HEADER;

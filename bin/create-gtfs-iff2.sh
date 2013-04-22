@@ -23,14 +23,13 @@ rm -rf /tmp/iff
 psql -d $DBNAME -f ../sql/iff.sql
 
 cp ../sql/stops_positioned.txt /tmp
-psql -d $DBNAME -f ../sql/iff-gtfs.sql
-zip -j ../gtfs/ns/gtfs-iffns-$DATE.zip /tmp/agency.txt /tmp/calendar_dates.txt /tmp/feed_info.txt /tmp/routes.txt /tmp/stops.txt /tmp/stop_times.txt /tmp/trips.txt /tmp/transfers.txt
-rm ../gtfs/ns/gtfs-iffns-latest.zip
-ln -s gtfs-iffns-$DATE.zip ../gtfs/ns/gtfs-iffns-latest.zip
+psql -d $DBNAME -f ../sql/iff-gtfs2.sql
+zip -j ../gtfs/ns/beta/gtfs-iffns-$DATE.zip /tmp/agency.txt /tmp/calendar_dates.txt /tmp/feed_info.txt /tmp/routes.txt /tmp/stops.txt /tmp/stop_times.txt /tmp/trips.txt /tmp/transfers.txt
+rm ../gtfs/ns/beta/gtfs-iffns-latest.zip
+ln -s gtfs-iffns-$DATE.zip ../gtfs/ns/beta/gtfs-iffns-latest.zip
 
-python transitfeed/feedvalidator.py -n ../gtfs/ns/gtfs-iffns-$DATE.zip -o ../gtfs/ns/gtfs-iffns-$DATE.html -l 50000 
-python transitfeed/kmlwriter.py ../gtfs/ns/gtfs-iffns-$DATE.zip
-zip ../gtfs/ns/gtfs-iffns-$DATE.kmz ../gtfs/ns/gtfs-iffns-$DATE.kml
+python transitfeed/feedvalidator_googletransit.py -n ../gtfs/ns/beta/gtfs-iffns-$DATE.zip -o ../gtfs/ns/beta/gtfs-iffns-$DATE.html -l 50000 
+python transitfeed/kmlwriter.py ../gtfs/ns/beta/gtfs-iffns-$DATE.zip
+zip ../gtfs/ns/beta/gtfs-iffns-$DATE.kmz ../gtfs/ns/beta/gtfs-iffns-$DATE.kml
+rm ../gtfs/ns/beta/gtfs-iffns-$DATE.kml
 psql -d $DBNAME -c "copy (select null as from_stop_id,null as to_stop_id,0 as transfer_type, 0 as min_transfer_time limit 0) to '/tmp/transfers.txt' CSV HEADER"
-rm ../gtfs/ns/gtfs-iffns-$DATE.kml
-

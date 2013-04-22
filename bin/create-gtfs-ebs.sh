@@ -11,7 +11,7 @@ fi
 rm -rf /tmp/*.txt
 psql -d kv1ebs -f ../sql/gtfs-shapes-ebs.sql
 psql -d kv1ebs -f ../sql/gtfs-shapes-passtimes.sql
-zip -j ../gtfs/ebs/gtfs-kv1ebs-$DATE.zip /tmp/*.txt
+zip -j ../gtfs/ebs/gtfs-kv1ebs-$DATE.zip /tmp/agency.txt /tmp/calendar_dates.txt /tmp/feed_info.txt /tmp/routes.txt /tmp/stops.txt /tmp/stop_times.txt /tmp/trips.txt /tmp/shapes.txt
 rm ../gtfs/ebs/gtfs-kv1ebs-latest.zip
 ln -s gtfs-kv1ebs-$DATE.zip ../gtfs/ebs/gtfs-kv1ebs-latest.zip
 

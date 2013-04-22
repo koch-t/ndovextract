@@ -1,3 +1,15 @@
+DELETE FROM pujopass WHERE
+concat_ws('|',version,dataownercode,organizationalunitcode,schedulecode,scheduletypecode) not in
+(SELECT distinct concat_ws('|',version,dataownercode,organizationalunitcode,schedulecode,scheduletypecode) from operday);;
+
+DELETE FROM schedpujo WHERE                                                                                            
+concat_ws('|',version,dataownercode,organizationalunitcode,schedulecode,scheduletypecode) not in 
+(SELECT distinct concat_ws('|',version,dataownercode,organizationalunitcode,schedulecode,scheduletypecode) from operday);;
+
+DELETE FROM schedvers WHERE
+concat_ws('|',version,dataownercode,organizationalunitcode,schedulecode,scheduletypecode) not in
+(SELECT distinct concat_ws('|',version,dataownercode,organizationalunitcode,schedulecode,scheduletypecode) from operday);;
+
 --Some old prodform modifications
 update jopatili set productformulatype = 1 where dataownercode = 'VTN' and deprecated = 'buur';
 update jopatili set productformulatype = 2 where dataownercode = 'VTN' and deprecated = 'belb';
@@ -52,12 +64,11 @@ FROM (SELECT u.dataownercode||'|'||u.userstopcode AS stop_id,
                ST_Transform(ST_setsrid(ST_makepoint(p.locationx_ew, p.locationy_ns), 28992), 4326) AS the_geom,
                0 AS location_type,
                u.dataownercode||'|'||u.userstopareacode||'|parent' AS parent_station
-        FROM (SELECT DISTINCT ON (dataownercode,userstopcode) * FROM usrstop ORDER BY dataownercode,userstopcode,version DESC)AS u,
+        FROM (SELECT DISTINCT ON (dataownercode,userstopcode) * FROM usrstop WHERE getin = true or getout = true ORDER BY dataownercode,userstopcode,version DESC) AS u,
               point AS p
         WHERE u.dataownercode = p.dataownercode AND
                u.userstopcode = p.pointcode AND
                u.version = p.version AND
-               (u.getin = TRUE OR u.getout = TRUE) AND
                 u.userstopcode IN (SELECT userstopcodebegin FROM jopatili 
                                    UNION SELECT userstopcodeend FROM jopatili)) AS KV1
 ) TO '/tmp/stops.txt' WITH CSV HEADER;
@@ -228,27 +239,42 @@ alter table jopatili add column productformulatype DECIMAL(4);
 
 COPY (
 SELECT
-p.version||'|'||p.dataownercode||'|'||p.organizationalunitcode||'|'||p.schedulecode||'|'||p.scheduletypecode||'|'||p.lineplanningnumber||'|'||p.journeynumber
+p.version||'|'||p.dataownercode||'|'||p.organizationalunitcode||'|'||p.schedulecode||'|'||p.scheduletypecode||'|'||p.lineplanningnumber||'|'||p.journeynumber 
 AS trip_id,
 coalesce(p.targetarrivaltime,p.targetdeparturetime) AS arrival_time,
 coalesce(p.targetdeparturetime,p.targetarrivaltime) AS departure_time,
 p.dataownercode||'|'||p.userstopcode AS stop_id,
+stop_headsign,
 p.stoporder AS stop_sequence,
 CASE WHEN (productformulatype in (2,35,36)) THEN 3 ELSE cast(not getin as integer) END as pickup_type,
 CASE WHEN (productformulatype in (2,35,36)) THEN 3 ELSE cast(not getout as integer) END as drop_off_type
 FROM usrstop as u,
-(select distinct version,dataownercode,organizationalunitcode,schedulecode,scheduletypecode from operday) as v,
-pujopass AS p
-LEFT JOIN jopatili as j ON (p.version = j.version AND p.dataownercode = j.dataownercode AND p.lineplanningnumber = j.lineplanningnumber AND 
-p.journeypatterncode = j.journeypatterncode AND p.stoporder = j.timinglinkorder)
-WHERE p.dataownercode = u.dataownercode
-and p.version = u.version
-AND p.userstopcode = u.userstopcode
-AND (u.getin = TRUE OR u.getout = TRUE) AND
-p.version = v.version AND
-p.dataownercode = v.dataownercode AND
-p.organizationalunitcode = v.organizationalunitcode AND
-p.schedulecode = v.schedulecode AND
-p.scheduletypecode = v.scheduletypecode AND
-p.dataownercode||'|'||p.lineplanningnumber not in (select dataownercode||'|'||lineplanningnumber from line where transporttype = 'TRAIN')
+pujopass as p
+  LEFT JOIN (SELECT DISTINCT ON (version,dataownercode,lineplanningnumber,journeypatterncode) 
+   version,dataownercode,lineplanningnumber,journeypatterncode,productformulatype FROM jopatili WHERE productformulatype != 18
+   ORDER BY version,dataownercode,lineplanningnumber,journeypatterncode,timinglinkorder ASC) as prodform USING 
+   (version,dataownercode,lineplanningnumber,journeypatterncode)
+  LEFT JOIN (
+	SELECT j.version,j.dataownercode,j.lineplanningnumber,j.journeypatterncode,j.stoporder,destnamefull as stop_headsign
+	FROM
+	dest as d,
+	(    SELECT DISTINCT ON (version,dataownercode,lineplanningnumber,journeypatterncode,timinglinkorder)
+	        version,dataownercode,lineplanningnumber,journeypatterncode,timinglinkorder+1 as stoporder,userstopcodeend as 
+userstopcode,destcode,istimingstop,productformulatype FROM JOPATILI
+ 	    ORDER BY dataownercode ASC,lineplanningnumber ASC,journeypatterncode ASC,timinglinkorder DESC) as j,
+	(    SELECT DISTINCT ON (version,dataownercode,lineplanningnumber,journeypatterncode)
+ 	     version,dataownercode,lineplanningnumber,journeypatterncode,destcode FROM JOPATILI
+  	   ORDER BY version,dataownercode,lineplanningnumber,journeypatterncode,destcode,timinglinkorder ASC) as t
+	WHERE
+	t.version = j.version AND
+	t.dataownercode = j.dataownercode AND
+	t.lineplanningnumber = j.lineplanningnumber AND
+	t.journeypatterncode = j.journeypatterncode AND
+	t.destcode <> j.destcode AND
+	j.version = d.version AND
+	j.destcode = d.destcode) as jt USING (version,dataownercode,lineplanningnumber,journeypatterncode,stoporder)
+WHERE
+p.version = u.version AND
+p.userstopcode = u.userstopcode AND
+(u.getin or u.getout)
 )TO '/tmp/stop_times.txt' WITH CSV HEADER;

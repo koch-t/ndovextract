@@ -12,7 +12,7 @@ fi
 
 psql -d kv1syntus -f ../sql/gtfs-shapes-syntus.sql
 psql -d kv1syntus -f ../sql/gtfs-shapes-passtimes.sql
-zip -j ../gtfs/syntus/gtfs-kv1syntus-$DATE.zip /tmp/*.txt
+zip -j ../gtfs/syntus/gtfs-kv1syntus-$DATE.zip /tmp/agency.txt /tmp/calendar_dates.txt /tmp/feed_info.txt /tmp/routes.txt /tmp/stops.txt /tmp/stop_times.txt /tmp/trips.txt /tmp/shapes.txt
 rm ../gtfs/syntus/gtfs-kv1syntus-latest.zip
 ln -s gtfs-kv1syntus-$DATE.zip ../gtfs/syntus/gtfs-kv1syntus-latest.zip
 
