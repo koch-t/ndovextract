@@ -1,6 +1,30 @@
+CREATE OR REPLACE FUNCTION 
+toseconds(time24 text) RETURNS integer AS $$
+SELECT total AS time
+FROM
+(SELECT
+  (cast(split_part($1, ':', 1) as int4) * 3600)      -- hours
++ (cast(split_part($1, ':', 2) as int4) * 60)        -- minutes
++ CASE WHEN $1 similar to '%:%:%' THEN (cast(split_part($1, ':', 3) as int4)) ELSE 0 END -- seconds when applicable
+as total
+) as xtotal
+$$ LANGUAGE SQL;
+
+COPY (
+SELECT
+'OVapi' as feed_publisher_name,
+'http://ovapi.nl/' as feed_publisher_url,
+'nl' as feed_lang,
+replace(cast(firstday AS text), '-', '') as feed_start_date,
+replace(cast(lastday AS text), '-', '') as feed_end_date,
+versionnumber as feed_version 
+FROM 
+delivery
+) TO '/tmp/feed_info.txt' WITH CSV HEADER;
+
 create table dataownerurl (company integer primary key, agency_url varchar(50));
 insert into dataownerurl values (22, 'http://www.gvb.nl');
-insert into dataownerurl values (911, 'http://www.veolia.nl');
+insert into dataownerurl values (911, 'http://www.keolis.de');
 insert into dataownerurl values (500, 'http://www.arriva.nl');
 insert into dataownerurl values (23, 'http://www.htm.nl');
 insert into dataownerurl values (600, 'http://www.connexxion.nl');
@@ -13,10 +37,11 @@ insert into dataownerurl values (700, 'http://www.veolia.nl');
 insert into dataownerurl values (701, 'http://www.veolia.nl');
 insert into dataownerurl values (35, 'http://www.ebs-ov.nl');
 insert into dataownerurl values (400, 'http://www.syntus.nl');
+insert into dataownerurl values (801, 'http://www.syntus.nl');
 insert into dataownerurl values (750, 'http://www.qbuzz.nl');
 insert into dataownerurl values (100, 'http://www.ns.nl');
 insert into dataownerurl values (37, 'http://www.ns.nl');
-insert into dataownerurl values (25, 'http://www.ns.nl');
+insert into dataownerurl values (25, 'http://www.gvu.nl');
 insert into dataownerurl values (200, 'http://www.ns-hispeed.nl');
 insert into dataownerurl values (960, 'http://www.ns-hispeed.nl');
 insert into dataownerurl values (300, 'http://www.thalys.nl');
@@ -56,7 +81,8 @@ agency_url,
 'nl' AS agency_lang
 FROM
 company as c, dataownerurl as d
-WHERE c.company = d.company
+WHERE c.company = d.company AND
+c.company in (select distinct companynumber from timetable_service)
 ) TO '/tmp/agency.txt' WITH CSV HEADER;
 
 COPY (
@@ -72,7 +98,7 @@ FROM delivery
 
 COPY (
 SELECT
-footnote as service_id,
+'NS:'||footnote as service_id,
 replace(cast(servicedate as text), '-', '') as date,
 '1' as exception_type
 FROM footnote
@@ -100,13 +126,13 @@ CASE WHEN (timezone = 1) THEN  'Europe/London' ELSE 'Europe/Amsterdam' END AS st
 NULL   AS parent_station,
 NULL   AS platform_code
 FROM
-(SELECT * from station where shortname in (select distinct station from timetable_stop)) as x
+(SELECT * from station where shortname in (select distinct station from timetable_stop) and trainchanges != 2) as x
 where shortname not in (select stop_id from gtfs_stops)
 UNION
 SELECT DISTINCT
 shortname||'|'||COALESCE(departure,'0') as stop_id,
 NULL as stop_code,
-CASE WHEN (departure is not null) THEN name||' Perron '||departure ELSE name END as stop_name,
+CASE WHEN (departure is not null) THEN name||' spoor '||departure ELSE name END as stop_name,
 COALESCE(CAST(st_X(the_geom) AS NUMERIC(8,5)),0) AS stop_lon,
 COALESCE(CAST(st_Y(the_geom) AS NUMERIC(9,6)),0) AS stop_lat,
 NULL as stop_timezone,
@@ -114,7 +140,7 @@ NULL as stop_timezone,
 shortname   AS parent_station,
 departure   AS platform_code
 FROM
-(SELECT * from station as s,timetable_platform as p where p.station = s.shortname and shortname in (select distinct station from timetable_stop)) as x
+(SELECT * from station as s,timetable_platform as p where p.station = s.shortname and shortname in (select distinct station from timetable_stop) and trainchanges != 2) as x
 where shortname||'|'||COALESCE(departure,'0')  not in (select stop_id from gtfs_stops)
 UNION
 SELECT
@@ -128,7 +154,7 @@ NULL as stop_timezone,
 shortname   AS parent_station,
 NULL   AS platform_code
 FROM
-(SELECT * from station as s WHERE shortname in (select distinct station from timetable_stop)) as x
+(SELECT * from station as s WHERE shortname in (select distinct station from timetable_stop) and trainchanges != 2) as x
 where shortname||'|0' not in (select stop_id from gtfs_stops)
 ) TO '/tmp/stops.txt' WITH CSV HEADER;
 
@@ -141,6 +167,12 @@ description as route_long_name,
 CASE WHEN (transmode = 'NSS' or transmode = 'NSB' or transmode = 'B') THEN 3 
      WHEN (transmode = 'NSM') THEN 1 
      WHEN (transmode = 'NST') THEN 0
+--   WHEN (transmode = 'NSS' or transmode = 'NSB' or transmode = 'B') THEN 714
+--   WHEN (transmode in ('ES','HSI','HSN','THA','ICE')) THEN 101
+--   WHEN (transmode in ('INT','IC','EC') THEN) 102
+--   WHEN (transmode in ('EN','CNL')) THEN 105
+--   WHEN (transmode in ('S')) THEN 103
+--   WHEN (transmode in ('SPR') THEN 109
      ELSE 2 END as route_type
 FROM timetable_transport as t,trnsmode as m,timetable_service as s
 WHERE m.code = t.transmode and t.serviceid = s.serviceid
@@ -154,7 +186,7 @@ update timetable_transport set laststop = 999 where serviceid not in (select ser
 COPY(
 SELECT
 companynumber||'-'||transmode as route_id,
-footnote as service_id,
+'NS:'||footnote as service_id,
 service.serviceid||'|'||footnote||'|'||COALESCE(servicenumber,cast (variant as integer)) as trip_id,
 name as trip_headsign,
 COALESCE(servicenumber,cast (variant as integer))%2 as direction_id,
@@ -170,12 +202,11 @@ WHERE
 validity.serviceid = service.serviceid AND
 ((validity.laststop = service.laststop AND validity.firststop = service.firststop) or validity.laststop = 999 ) AND
 trans.serviceid = service.serviceid AND 
-((trans.laststop = service.laststop AND trans.firststop = service.firststop) or trans.laststop = 999) AND
+((trans.firststop = service.firststop) or trans.laststop = 999) AND
 footnote is not null AND
 stops.serviceid = service.serviceid AND
 stops.service_seq = service.laststop AND
-stops.station = station.shortname AND
-service.serviceid not in (select serviceid from timetable_attribute where code = 'NIIN')
+stops.station = station.shortname
 ORDER BY trip_id
 ) TO '/tmp/trips.txt' WITH CSV HEADER;
 
@@ -185,86 +216,46 @@ trip_id,
 CASE WHEN(stop_sequence = 1) THEN departure_time ELSE arrival_time END,
 departure_time,
 stop_id,
+arrival_stop_id,
 stop_sequence,
-arrival_platform,
-pickup_type
-FROM
-	(SELECT
+pickup_type,
+drop_off_type
+FROM 
+  (
+        SELECT
 	service.serviceid||'|'||validity.footnote||'|'||COALESCE(servicenumber,cast (variant as integer)) as trip_id,
 	arrivaltime as arrival_time,
 	COALESCE(departuretime,arrivaltime) as departure_time,
 	stop.station||'|'||COALESCE(departure,'0') as stop_id,
-        row_number() over (partition by service.serviceid,validity.footnote,COALESCE(servicenumber,cast (variant as integer)) order by idx asc) as stop_sequence,
-	CASE WHEN (arrival <> departure) THEN arrival else NULL END as arrival_platform,
-        idx,
-        CASE WHEN (service.serviceid in (select serviceid from timetable_attribute where code = 'RESV')) THEN 2 ELSE 0 END as pickup_type
+        row_number() over (partition by service.serviceid,validity.footnote,COALESCE(servicenumber,cast (variant as integer)) order by idx asc) as 
+stop_sequence,
+	CASE WHEN (arrival <> departure) THEN stop.station||'|'||arrival else NULL END as arrival_stop_id,
+        CASE
+        WHEN (ARRAY['NIIN'] @> attrs) THEN 1
+        WHEN (ARRAY['RESV','IRES'] @> attrs) THEN 2 
+        ELSE 0 END as pickup_type,
+        CASE
+        WHEN (ARRAY['NIIN'] @> attrs) THEN 0
+        WHEN (ARRAY['RESV','IRES'] @> attrs) THEN 2 
+        ELSE 0 END as drop_off_type
+        FROM
+        (SELECT
+        stop.serviceid,
+        stop.idx,
+        cast(array_agg(code) as text[]) as attrs
 	FROM
-	timetable_service as service,
-        timetable_validity as validity,
-        timetable_stop as stop
-        LEFT JOIN timetable_platform as platform USING (serviceid,idx)
-	WHERE
-        idx between service.firststop and service.laststop AND
-        stop.serviceid = service.serviceid AND
-        validity.serviceid = service.serviceid AND
-        validity.footnote is not null AND
-        service.serviceid not in (select serviceid from timetable_attribute where code = 'NIIN')
+        timetable_stop as stop LEFT JOIN (SELECT serviceid,code,generate_series(cast(firststop as integer),cast(laststop as integer)) as idx FROM 
+timetable_attribute) as attr USING (serviceid,idx)
+        GROUP BY stop.serviceid,stop.idx
 	) as x
+        LEFT JOIN (SELECT serviceid,companynumber,servicenumber,variant,generate_series(cast(firststop as integer),cast(laststop as integer)) as idx 
+FROM timetable_service) as service USING (serviceid,idx)
+        LEFT JOIN timetable_validity as validity USING (serviceid)
+        LEFT JOIN timetable_stop as stop USING (serviceid,idx)
+        LEFT JOIN timetable_platform as platform USING (serviceid,idx)
+   ) as y
 ORDER BY trip_id,stop_sequence
 ) TO '/tmp/stop_times.txt' WITH CSV HEADER;
-
-copy(
-select distinct on (p1.station,p2.station,shortname,from_stop_id,to_stop_id)
-shortname||'|'||p1.arrival as from_stop_id,
-shortname||'|'||p2.departure as to_stop_id,
-NULL as from_trip_id,
-NULL as to_trip_id,
-2 as transfer_type,
-layovertime as min_transfer_time
-from station,
-(select distinct on (p.station,p.departure,p.arrival) station,departure,arrival from timetable_platform as p) as p1,
-(select distinct on (p.station,p.departure,p.arrival) station,departure,arrival from timetable_platform as p) as p2
-WHERE 
-p1.station = shortname AND
-p2.station = shortname AND
-p1.station = p2.station AND
-shortname||'|'||p1.arrival in (select distinct station||'|'||arrival from timetable_platform) AND
-shortname||'|'||p2.departure in (select distinct station||'|'||departure from timetable_platform) AND
-p1.arrival <> p2.departure
-UNION
-SELECT
-c.station||'|'||a.departure as from_stop_id,
-c.station||'|'||d.departure as to_stop_id,
-fromservice||'|'||from_validity.footnote||'|'||COALESCE(from_service.servicenumber,cast (from_service.variant as integer)) as from_trip_id,
-toservice||'|'||to_validity.footnote||'|'||COALESCE(to_service.servicenumber,cast (to_service.variant as integer)) as to_trip_id,
-CASE WHEN (possiblechange = 1) THEN 1 ELSE 3 END as transfer_type,
-NULL as min_transfer_time
-from 
-changes as c,
-timetable_platform as a,
-timetable_platform as d,
-timetable_service as from_service,
-timetable_service as to_service,
-timetable_validity as from_validity,
-timetable_validity as to_validity
-WHERE
-a.serviceid = fromservice AND
-d.serviceid = toservice AND
-a.station = d.station AND
-c.station = a.station AND
-from_service.serviceid = fromservice AND
-a.idx between from_service.firststop and from_service.laststop AND
-to_service.serviceid = toservice AND
-d.idx between to_service.firststop and to_service.laststop AND
-from_validity.serviceid = fromservice AND
-to_validity.serviceid = toservice AND
-from_validity.serviceid = fromservice AND
-fromservice not in (select serviceid from timetable_attribute where code = 'NIIN') AND
-toservice not in (select serviceid from timetable_attribute where code = 'NIIN') AND
---- no idea why this is even possible
-fromservice <> toservice AND
-a.arrival <> d.departure
-) to '/tmp/transfers.txt' WITH CSV HEADER;
 
 copy(
 SELECT DISTINCT ON (from_stop_id,to_stop_id)
@@ -286,36 +277,51 @@ p1.arrival <> p2.departure AND
 shortname||'|'||p1.arrival in (select distinct station||'|'||departure from timetable_platform) AND
 shortname||'|'||p2.departure in (select distinct station||'|'||departure from timetable_platform)
 UNION
-SELECT
+(SELECT DISTINCT ON (from_stop_id,to_stop_id)
 c.station||'|'||a.departure as from_stop_id,
 c.station||'|'||d.departure as to_stop_id,
 2 as transfer_type,
-(cast(split_part(to_stop.departuretime,':',1) as int4) * 60 * 60) + (cast(split_part(to_stop.departuretime,':',2) as int4) * 60) + (cast(split_part(to_stop.departuretime,':',3) as int4))-
-(cast(split_part(from_stop.arrivaltime,':',1) as int4) * 60 * 60) + (cast(split_part(from_stop.arrivaltime,':',2) as int4) * 60) + (cast(split_part(from_stop.arrivaltime,':',3) as int4))-20 as min_transfer_time
-from 
+(toseconds(dt.departuretime) - toseconds(at.arrivaltime) - 30) as min_transfer_time
+FROM
 changes as c,
 timetable_platform as a,
 timetable_platform as d,
-timetable_stop as from_stop,
-timetable_stop as to_stop
+timetable_stop as at,
+timetable_stop as dt,
+station as ats,
+station as dts,
+timetable_service as from_service,
+timetable_service as to_service,
+timetable_validity as from_validity,
+timetable_validity as to_validity
 WHERE
 a.serviceid = fromservice AND
 d.serviceid = toservice AND
 a.station = d.station AND
 c.station = a.station AND
-from_stop.serviceid = fromservice AND
-to_stop.serviceid = toservice AND
-from_stop.station = c.station AND
-to_stop.station = c.station AND
+a.serviceid = at.serviceid AND
+a.idx = at.idx AND
+a.station = at.station AND
+d.serviceid = dt.serviceid AND
+d.idx = dt.idx AND
+possiblechange in (1,2) AND
+d.station = dt.station AND
+ats.shortname = at.station AND
+dts.shortname = dt.station AND
+from_service.serviceid = fromservice AND
+a.idx between from_service.firststop and from_service.laststop AND
+to_service.serviceid = toservice AND
+d.idx between to_service.firststop and to_service.laststop AND
+from_validity.serviceid = fromservice AND
+to_validity.serviceid = toservice AND
+from_validity.serviceid = fromservice AND
 fromservice not in (select serviceid from timetable_attribute where code = 'NIIN') AND
 toservice not in (select serviceid from timetable_attribute where code = 'NIIN') AND
 --- no idea why this is even possible
 fromservice <> toservice AND
 a.arrival <> d.departure AND
-possiblechange = 1 AND
-from_stop.arrivaltime is not null AND
-to_stop.departuretime is not null AND
-from_stop.arrivaltime < to_stop.departuretime 
+dt.departuretime > at.departuretime
+ORDER BY from_stop_id ASC,to_stop_id ASC,min_transfer_time ASC)
 ) as transfers
 ORDER BY
 from_stop_id,to_stop_id,min_transfer_time
