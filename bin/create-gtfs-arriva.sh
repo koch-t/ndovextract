@@ -1,7 +1,10 @@
 #!/bin/bash
 cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DATE=$(date +'%Y%m%d')
-python manager.py -c -d kv1arr -f ../kv1feeds/arriva
+USERNAME=gebruikersnaam
+PASSWORD=wachtwoord
+wget --user $USERNAME --password $PASSWORD -N --accept=zip  -P ../kv1feeds/arriva -nd -r http://data.ndovloket.nl/arr/ -l 1
+python manager.py -x -n -c -d kv1arr -f ../kv1feeds/arriva
 status=$?
 rm -rf /tmp/*.txt
 if [ $status != 0 ];
