@@ -10,7 +10,7 @@ import logging
 from kv1compress import generatetimedemandgroups
 
 importorder = ['DEST','LINE','CONAREA','CONFINREL','POINT','USRSTAR','USRSTOP','TILI','LINK','POOL','JOPA','JOPATILI','ORUN','ORUNORUN','SPECDAY','PEGR','EXCOPDAY','PEGRVAL','TIVE','TIMDEMGRP','TIMDEMRNT','PUJO','SCHEDVERS','PUJOPASS','SCHEDPUJO','OPERDAY']
-versionheaders = ['Version_Number','VersionNumber','VERSIONNUMBER']
+versionheaders = ['Version_Number','VersionNumber','VERSIONNUMBER','version']
 log = logging.getLogger('ndovextract')
 
 def table(filename):
@@ -38,15 +38,17 @@ def cleandelta(conn):
         conn.commit()
 
 def metadata(schedule):
-    lines = schedule.split('\r\n')
+    lines = schedule.split('\n')
     if lines[0].split('|')[1] in versionheaders:
         firstline = 1
     else:
         firstline = 0
     validfrom = '3000-01-01'
     validthru = '1900-01-01'
-    for line in lines[firstline:-1]:
+    for line in lines[firstline:]:
        values = line.split('|')
+       if len(values) < 8:
+           continue
        dataowner = values[3]
        if values[7] < validfrom:
            validfrom = values[7]
@@ -61,7 +63,7 @@ def importzip(conn,filename,zipfile):
     meta = metadata(zipfile.read(files['OPERDAY']))
     if datetime.strptime(meta['ValidThru'].replace('-',''),'%Y%m%d') < (datetime.now() - timedelta(days=1)):
         return meta
-    header = (zipfile.read(files['DEST']).split('\r\n')[0].split('|')[1] in versionheaders)
+    header = (zipfile.read(files['DEST']).split('\n')[0].split('|')[1] in versionheaders)
     encoding = encodingof(meta['DataOwnerCode'])
     for table in importorder:
         if table in files:
@@ -90,14 +92,20 @@ def mergedelta(dataownercode,conn,delta):
     else:
         print 'Merging KV1'
     cur = conn.cursor()
-    if delta and dataownercode not in ['HTM']: #HTM doesn't publish KV1 with overlap    
+    if delta and dataownercode in ['GVB']: #Cut away the data within the boundaries of the schervers validfrom/validthru
+        cur.execute("""
+DELETE FROM operday as o
+WHERE EXISTS
+( SELECT 1 FROM schedvers_delta as d WHERE o.organizationalunitcode = d.organizationalunitcode
+AND o.dataownercode = d.dataownercode and o.validdate between validfrom and validthru)
+    elif delta and dataownercode not in ['HTM','QBUZZ']: #HTM doesn't publish KV1 with overlap    
         cur.execute("""
 DELETE FROM operday as o
 WHERE EXISTS
 ( SELECT 1 FROM operday_delta as d WHERE o.organizationalunitcode = d.organizationalunitcode
 AND o.dataownercode = d.dataownercode and o.validdate = d.validdate)
 """)
-    elif not delta and dataownercode not in ['HTM']:
+    elif not delta and dataownercode not in ['QBUZZ','HTM']:
         cur.execute("""
 DELETE FROM operday as o
 WHERE validdate >=
@@ -109,7 +117,7 @@ WHERE validdate >=
     cur.close()
     conn.commit() 
 
-def purge(conn):
+def purge(conn,delta=False):
     print 'delete expired deltas'
     cur = conn.cursor()
     cur.execute("UPDATE version SET validthru = (select max(validdate) from operday where version = version.version group by version);")
@@ -137,6 +145,7 @@ def importfile(conn,path,filename,dataownerversion,key,delta,compress=False):
     if fileimported(conn,filename,dataownerversion):
         print 'Same version of file %s already imported' % (filename)
         return False
+    print filename
     zip = zipfile.ZipFile(path+'/'+filename,'r')
     if 'Csv.zip' in zip.namelist():
         zipfile.ZipFile.extract(zip,'Csv.zip','/tmp')
@@ -152,7 +161,7 @@ def importfile(conn,path,filename,dataownerversion,key,delta,compress=False):
     setversion(conn,meta)
     mergedelta(meta['DataOwnerCode'],conn,delta)
     cleandelta(conn)
-    purge(conn)
+    purge(conn,delta=delta)
     return True
 
 def downloadfile(filename,url):
@@ -205,15 +214,20 @@ def sync(conn,kv1index,compress=False):
         file['filename'] = periode.find('zipfile').text
         file['dataownerversion'] = periode.find('versie').text
         file['ispublished'] = periode.find('isgepubliceerd').text
+        file['publishdate'] = periode.find('publicatiedatum').text
+        print periode.find('isbaseline').text
+        file['isbaseline'] = (periode.find('isbaseline').text == 'true')
         if file['ispublished'] == 'false':
             deletedelta(conn,file['key'])
         file['validfrom'] = periode.find('startdatum').text
         file['validthru'] = periode.find('einddatum').text
+        if file['key'] == 'a00bac99-e404-4783-b2f7-a39d48747999':
+            file['isbaseline'] = True
         index.append(file)
-    index = multikeysort(index, ['validfrom', '-validthru'])
+    index = multikeysort(index, ['-isbaseline','publishdate'])
     changed = False
     for f in index:
-        print 'key: '+f['key']+' filename: ' + f['filename'] + ' startdatum ' + f['validfrom'][0:10] + ' einddatum ' + f['validthru'][0:10] 
+        print 'key: '+f['key']+' filename: ' + f['filename'] + ' isbaseline: ' + str(f['isbaseline']) + ' startdatum ' + f['validfrom'][0:10] + 'einddatum ' + f['validthru'][0:10] 
         if not fileimported(conn,f['key'],f['dataownerversion']) and f['ispublished'] == 'true':
             print 'Import file %s version %s' % (f['filename'],str(f['dataownerversion']))
             url = '/'.join(kv1index.strip().split('/')[:-1])+'/'+f['filename']
@@ -249,6 +263,10 @@ def main():
                     action="store_true",
                     default=False,
                     help="Generate timedemandgroupcodes")
+    parser.add_option("-n", "--sortbyname", dest="sortbyname",
+                    action="store_true",
+                    default=False,
+                    help="Order by filename instead of date modified, use this only with KV1 with a regular filename which includes a order")
     parser.add_option("-x", "--delta", dest="delta",
                     action="store_true",
                     default=False,
@@ -261,26 +279,31 @@ def main():
         exit(-1)
     if opts.purge:
         conn = psycopg2.connect("dbname='%s'" % (opts.database))
-        purge(conn)
+        purge(conn,delta=opts.delta)
         conn.close()
     if opts.addfile:
         path, filename = os.path.split(opts.addfile)
         conn = psycopg2.connect("dbname='%s'" % (opts.database))
         changed = importfile(conn,path,filename,1,None,opts.delta,opts.compress)
-        changed = changed or purge(conn)
+        changed = changed or purge(conn,delta=opts.delta)
         conn.close()
     elif opts.addfolder:
         files = os.listdir(opts.addfolder)
-        files.sort(key=lambda f: os.path.getmtime(os.path.join(opts.addfolder, f)))
+        if opts.sortbyname:
+            files = sorted(files)
+        else:
+            files.sort(key=lambda f: os.path.getmtime(os.path.join(opts.addfolder, f)))
         conn = psycopg2.connect("dbname='%s'" % (opts.database))
         for file in files:
-            changed = changed or importfile(conn,opts.addfolder,file,1,None,opts.delta,opts.compress)
-        changed = changed or purge(conn)
+            if file[-4:].lower() == '.zip' and importfile(conn,opts.addfolder,file,1,None,opts.delta,opts.compress):
+                changed = True
+        if purge(conn,delta=opts.delta):
+            changed = True
         conn.close()
     elif opts.kv1index:
         conn = psycopg2.connect("dbname='%s'" % (opts.database))
         changed = sync(conn,opts.kv1index,opts.compress);
-        changed = changed or purge(conn)
+        changed = changed or purge(conn,delta=True)
         conn.close()
     if not changed:
         sys.exit(1)
