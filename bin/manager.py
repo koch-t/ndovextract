@@ -97,7 +97,7 @@ def mergedelta(dataownercode,conn,delta):
 DELETE FROM operday as o
 WHERE EXISTS
 ( SELECT 1 FROM schedvers_delta as d WHERE o.organizationalunitcode = d.organizationalunitcode
-AND o.dataownercode = d.dataownercode and o.validdate between validfrom and validthru)
+AND o.dataownercode = d.dataownercode and o.validdate between validfrom and validthru)""")
     elif delta and dataownercode not in ['HTM','QBUZZ']: #HTM doesn't publish KV1 with overlap    
         cur.execute("""
 DELETE FROM operday as o
