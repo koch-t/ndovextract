@@ -2,8 +2,8 @@
 DBNAME=iff
 
 DATE=$(date +'%Y%m%d')
-USERNAME=voorwaarden
-PASSWORD=geaccepteerd
+USERNAME=password
+PASSWORD=username
 #rm /tmp/*.txt
 
 wget --user=$USERNAME --password=$PASSWORD http://data.ndovloket.nl/ns/ns-latest.zip -O /tmp/iffns.zip
