@@ -227,6 +227,7 @@ hwd|1,,Heerhugowaard spoor 1,4.82377320528,52.6704100206,,0,hwd,1
 hwd|2,,Heerhugowaard spoor 2,4.82386440039,52.6703238165,,0,hwd,2
 hwd|3,,Heerhugowaard spoor 3,4.82388854027,52.6703091781,,0,hwd,3
 albert,albert,Albertville,6.38465,45.660264,Europe/Amsterdam,1,,
+adh|0,adh,Leeuwarden Achter De Hoven,5.80409,53.197555,,0,adh,
 dln|1,,Dalen spoor 1,6.75830572844,52.6944998147,,0,dln,1
 dln|0,,Dalen,6.75812065601,52.6947192691,,0,dln,
 bn|0,,Borne,6.74903601408,52.2986002277,,0,bn,
@@ -258,6 +259,7 @@ lp|1,,Loppersum spoor 1,6.74755275249,53.3347491545,,0,lp,1
 escht,escht,Eschweiler Talbahnhof,6.26306,50.814716,Europe/Amsterdam,1,,
 rtd|14,,Rotterdam Centraal spoor 14,4.46835100651,51.9254023707,,0,rtd,14
 hwob,hwob,Wolfsburg,10.7882,52.429479,Europe/Amsterdam,1,,
+gmog|0,gmog,Mortsel-Oude God,4.4555,51.170977,,0,gmog,
 gerp|0,,Groningen Europapark,6.58322453499,53.2061642828,,0,gerp,
 gerp|1,,Groningen Europapark spoor 1,6.58267199993,53.2062960135,,0,gerp,1
 gerp|2,,Groningen Europapark spoor 2,6.58261299133,53.2062285417,,0,gerp,2
@@ -332,6 +334,7 @@ bressx|0,,Bressoux,5.61143875122,50.6442628867,,0,bressx,
 lkr|0,lkr,Ekeren,4.43447470665,51.2818938083,,0,lkr,
 ledn|8b,,Leiden Centraal spoor 8b,4.48118537664,52.165857747,,0,ledn,8b
 ledn|8a,,Leiden Centraal spoor 8a,4.48307096958,52.167284119,,0,ledn,8a
+lnk|0,lnk,Mechelen-Nekkerspoel,4.48957,51.029934,,0,lnk,
 dn|3,,Deurne spoor 3,5.78812658787,51.4560058593,,0,dn,3
 brusc|0,,Brussel-Centraal,4.35715198517,50.8453781153,,0,brusc,
 stv|0,,Stavoren,5.35902142525,52.8864277911,,0,stv,
@@ -363,7 +366,7 @@ vlb|1,,Vierlingsbeek spoor 1,5.99693119526,51.592398999,,0,vlb,1
 vlb|0,,Vierlingsbeek,5.99758565426,51.5919457558,,0,vlb,
 rm|3a,,Roermond spoor 3a,5.99421143532,51.1923957995,,0,rm,3a
 rm|3b,,Roermond spoor 3b,5.9947425127,51.1936060746,,0,rm,3b
-vlb|2,,Vierlingsbeek spoor 2,5.99719941616,51.5915958223,,0,vlb,2
+utlr|4,utlr,Utrecht Leidsche Rijn spoor 4,5.06530344486,52.098896844,,0,utlr,4
 ut|19b,,Utrecht Centraal spoor 19b,5.11003732681,52.0884064668,,0,ut,19b
 ut|19a,,Utrecht Centraal spoor 19a,5.10824561119,52.0904401382,,0,ut,19a
 tpsw|0,,Tiel Passewaaij,5.39269924164,51.8742488463,,0,tpsw,
@@ -375,6 +378,7 @@ ddn|0,,Delden,6.71469032764,52.2602745621,,0,ddn,
 frp,frp,Puurs,4.28259,51.07714,Europe/Amsterdam,1,,
 utg|1b,,Uitgeest spoor 1b,4.70265269279,52.5216395098,,0,utg,1b
 utg|1a,,Uitgeest spoor 1a,4.70112651587,52.522457145,,0,utg,1a
+utlr|0,utlr,Utrecht Leidsche Rijn,5.06473749876,52.0987436093,,0,utlr,
 zl|5a,,Zwolle spoor 5a,6.0901594162,52.5053815672,,0,zl,5a
 vdm|0,,Veendam,6.88633561134,53.1052006963,,0,vdm,
 karlsr|0,,Karlsruhe Hbf,8.40043,48.99357,,0,karlsr,
@@ -540,8 +544,9 @@ hamh,hamh,Hamburg Hbf,10.00697,53.552724,Europe/Amsterdam,1,,
 nh,nh,Nuth,5.89235723019,50.9198331019,Europe/Amsterdam,1,,
 leer,leer,Leer (Ostfriesland),7.46485590935,53.2314684348,Europe/Amsterdam,1,,
 nm,nm,Nijmegen,5.85303068161,51.8432285026,Europe/Amsterdam,1,,
+utlr,utlr,Utrecht Leidsche Rijn,5.06512105465,52.0988704811,Europe/Amsterdam,1,,
 na,na,Nieuw Amsterdam,6.84881687164,52.7185665751,Europe/Amsterdam,1,,
-valtgv|0,,Valence TGV,4.89217758179,44.9251891281,,0,valtgv,
+valtgv|0,,Valence TGV,4.978611,44.991667,,0,valtgv,
 ns,ns,Nunspeet,5.78469,52.371019,Europe/Amsterdam,1,,
 bhf|0,,Berlin Ostbahnhof,13.43461,52.511013,,0,bhf,
 wfm|1,,Warffum spoor 1,6.56694889069,53.3902710473,,0,wfm,1
@@ -551,6 +556,7 @@ drh|2,,Driehuis spoor 2,4.63881343603,52.4428418596,,0,drh,2
 drh|1,,Driehuis spoor 1,4.63888585567,52.4428042558,,0,drh,1
 drh|0,,Driehuis,4.63900923729,52.44311326,,0,drh,
 tpsw,tpsw,Tiel Passewaaij,5.39250612259,51.8741660478,Europe/Amsterdam,1,,
+gmd|0,gmd,Mortsel-Deurnesteenweg,4.44683,51.182413,,0,gmd,
 ztm,ztm,Zoetermeer,4.47682678699,52.0476145962,Europe/Amsterdam,1,,
 eml|2,,Ermelo spoor 2,5.61461448669,52.3014919737,,0,eml,2
 eml|1,,Ermelo spoor 1,5.61473250389,52.3014690111,,0,eml,1
@@ -698,6 +704,7 @@ hlgh|1,,Harlingen Haven spoor 1,5.41131913662,53.1748088767,,0,hlgh,1
 hlgh|0,,Harlingen Haven,5.41177511215,53.1747976232,,0,hlgh,
 sn,sn,Schinnen,5.87498992682,50.9388465849,Europe/Amsterdam,1,,
 sm,sm,Swalmen,6.03306055069,51.2363554455,Europe/Amsterdam,1,,
+fki|0,fki,Kontich,4.47626,51.133746,,0,fki,
 sd,sd,Soestdijk,5.29981970787,52.1839020129,Europe/Amsterdam,1,,
 ddrs,ddrs,Dordrecht Stadspolders,4.71666,51.802089,Europe/Amsterdam,1,,
 ledn|1,,Leiden Centraal spoor 1,4.48211207986,52.1657730188,,0,ledn,1
@@ -839,7 +846,9 @@ gd|5,,Gouda spoor 5,4.70567286015,52.0173676431,,0,gd,5
 baselb|0,,Basel Bad Bf,7.60778,47.567364,,0,baselb,
 asd|15,,Amsterdam Centraal spoor 15,4.90078747272,52.3793716813,,0,asd,15
 asd|14,,Amsterdam Centraal spoor 14,4.90072309971,52.3792832669,,0,asd,14
+asd|11,asd,Amsterdam Centraal spoor 11,4.90062385798,52.3791964896,,0,asd,11
 asd|10,,Amsterdam Centraal spoor 10,4.90058362484,52.3791490077,,0,asd,10
+asd|13,asd,Amsterdam Centraal spoor 13,4.90068554878,52.3792488835,,0,asd,13
 eprn,eprn,Preussen,7.53934,51.588875,Europe/Amsterdam,1,,
 mrn,mrn,Maarn,5.37041008472,52.0643612491,Europe/Amsterdam,1,,
 mrb,mrb,Marienberg,6.57406210899,52.5090123764,Europe/Amsterdam,1,,
@@ -899,6 +908,7 @@ rs|0,,Rosmalen,5.36938548088,51.7153654003,,0,rs,
 rs|2,,Rosmalen spoor 2,5.36926478148,51.7150147566,,0,rs,2
 bd|8,,Breda spoor 8,4.78001832962,51.5951366918,,0,bd,8
 lni,lni,Niel,4.33832,51.111457,Europe/Amsterdam,1,,
+lnk,lnk,Mechelen-Nekkerspoel,4.48957,51.029934,Europe/Amsterdam,1,,
 bd|2,,Breda spoor 2,4.78005,51.595065,,0,bd,2
 bd|3,,Breda spoor 3,4.77997004986,51.5955182561,,0,bd,3
 bd|0,,Breda,4.78002905846,51.5948850909,,0,bd,
@@ -941,6 +951,7 @@ lkp|0,,Kapellen,4.43268,51.312666,,0,lkp,
 gdm|3a,,Geldermalsen spoor 3a,5.27116835117,51.8834120376,,0,gdm,3a
 hdr,hdr,Den Helder,4.76063668728,52.9568211084,Europe/Amsterdam,1,,
 gdm|3b,,Geldermalsen spoor 3b,5.27162432671,51.8823557331,,0,gdm,3b
+rm|1,,Roermond spoor 1,5.99410414696,51.1928866371,,0,rm,1
 zp|1a,,Zutphen spoor 1a,6.19292020798,52.1443398139,,0,zp,1a
 zp|1b,,Zutphen spoor 1b,6.19536101818,52.1450541734,,0,zp,1b
 hdg,hdg,Hurdegaryp,5.93453228474,53.2187973494,Europe/Amsterdam,1,,
@@ -969,6 +980,7 @@ nwl|2,,Schiedam Nieuwland spoor 2,4.38359722495,51.922909598,,0,nwl,2
 nwl|0,,Schiedam Nieuwland,4.38383728266,51.9226184623,,0,nwl,
 nwl|1,,Schiedam Nieuwland spoor 1,4.38369244337,51.9228273027,,0,nwl,1
 emte,emte,Metelen Land,7.25441,52.162414,Europe/Amsterdam,1,,
+uhm,uhm,Uithuizermeeden,6.72040879726,53.4140627285,Europe/Amsterdam,1,,
 hdrz,hdrz,Den Helder Zuid,4.76434,52.932919,Europe/Amsterdam,1,,
 ht|7a,ht,Hertogenbosch ('s) spoor 7a,5.29357552528,51.6912676895,,0,ht,5b
 ht|7b,ht,Hertogenbosch ('s) spoor 7b,5.29273867607,51.6893522212,,0,ht,5b
@@ -1031,6 +1043,7 @@ koln,koln,Koeln Hbf,6.95893764496,50.9430363837,Europe/Amsterdam,1,,
 apn|2,,Alphen a/d Rijn spoor 2,4.65726435184,52.1245866917,,0,apn,2
 apn|3,,Alphen a/d Rijn spoor 3,4.65733408928,52.1246262133,,0,apn,3
 apn|0,,Alphen a/d Rijn,4.65782761574,52.1246657348,,0,apn,
+apn|1,apn,Alphen a/d Rijn spoor 1,4.6578,52.124335,,0,apn,1
 dvn|1,,Duiven spoor 1,6.0144969821,51.9434712458,,0,dvn,1
 dvn|0,,Duiven,6.01451039314,51.9436349338,,0,dvn,
 dvn|2,,Duiven spoor 2,6.01442188025,51.943405109,,0,dvn,2
@@ -1189,6 +1202,7 @@ htnc,htnc,Houten Castellum,5.17889499664,52.0185132087,Europe/Amsterdam,1,,
 dmn|0,,Diemen,4.96675908566,52.3451584746,,0,dmn,
 dmn|1,,Diemen spoor 1,4.96634602547,52.345620549,,0,dmn,1
 dmn|2,,Diemen spoor 2,4.96636748314,52.3456467658,,0,dmn,2
+dmn|3,dmn,Diemen spoor 3,4.96734,52.345598,,0,dmn,3
 viers,viers,Viersen,6.40427,51.255028,Europe/Amsterdam,1,,
 gz|4,,Gilze-Rijen spoor 4,4.92525994778,51.5837832714,,0,gz,4
 edn|2,,Eijsden spoor 2,5.70989727974,50.7716861801,,0,edn,2
@@ -1214,8 +1228,9 @@ kzd,kzd,Koog-Zaandijk,4.80516135693,52.4691615516,Europe/Amsterdam,1,,
 asdm|3,,Amsterdam Muiderpoort spoor 3,4.93200838566,52.360702495,,0,asdm,3
 asdm|2,,Amsterdam Muiderpoort spoor 2,4.93176162243,52.3606599071,,0,asdm,2
 asdm|0,,Amsterdam Muiderpoort,4.93110716343,52.3604731752,,0,asdm,
+utlr|1,utlr,Utrecht Leidsche Rijn spoor 1,5.0652846694,52.0988177552,,0,utlr,1
 baselb,baselb,Basel Bad Bf,7.60778,47.567364,Europe/Amsterdam,1,,
-rm|1,,Roermond spoor 1,5.99410414696,51.1928866371,,0,rm,1
+fwa,fwa,Sint-Katelijne-Waver,4.49579,51.069894,Europe/Amsterdam,1,,
 wsm|2,,Winsum spoor 2,6.52024626732,53.3302130377,,0,wsm,2
 ww|1a,,Winterswijk spoor 1a,6.71475470066,51.9681797186,,0,ww,1a
 ww|1b,,Winterswijk spoor 1b,6.71622991562,51.9670956613,,0,ww,1b
@@ -1234,6 +1249,7 @@ twl,twl,Twello,6.10065221786,52.2383161234,Europe/Amsterdam,1,,
 vwd|2,,Veenwouden spoor 2,5.99009692669,53.2351385115,,0,vwd,2
 vwd|0,,Veenwouden,5.98946392536,53.2352926285,,0,vwd,
 vwd|1,,Veenwouden spoor 1,5.99006474018,53.2351770408,,0,vwd,1
+vlb|2,,Vierlingsbeek spoor 2,5.99719941616,51.5915958223,,0,vlb,2
 gdm|4a,,Geldermalsen spoor 4a,5.27098596096,51.8833888588,,0,gdm,4a
 ehzw|0,,Holzwickede,7.62052,51.50508,,0,ehzw,
 vst|2,,Voorschoten spoor 2,4.43363919854,52.1262753843,,0,vst,2
@@ -1276,12 +1292,14 @@ brig,brig,Brig,7.985,46.314319,Europe/Amsterdam,1,,
 hze,hze,Heeze,5.56961238384,51.3850330688,Europe/Amsterdam,1,,
 ebgo|0,,Borghorst (Westf),7.39616,52.119178,,0,ebgo,
 eahs,eahs,Ahaus,7.01669,52.081615,Europe/Amsterdam,1,,
+mho|0,mho,Hove,4.46486,51.153522,,0,mho,
 gdr|0,,Gaanderen,6.34850978851,51.9305628136,,0,gdr,
 gdr|1,,Gaanderen spoor 1,6.34878873825,51.9306157382,,0,gdr,1
-uhm,uhm,Uithuizermeeden,6.72040879726,53.4140627285,Europe/Amsterdam,1,,
+fdp|0,fdp,Duffel,4.49266,51.091264,,0,fdp,
 hvsn|2,,Hilversum Noord spoor 2,5.17409920692,52.2378792091,,0,hvsn,2
 hvsn|1,,Hilversum Noord spoor 1,5.17391145229,52.2378266477,,0,hvsn,1
 hvsn|0,,Hilversum Noord,5.17448544502,52.2377708011,,0,hvsn,
+gmog,gmog,Mortsel-Oude God,4.4555,51.170977,Europe/Amsterdam,1,,
 hdrz|2,,Den Helder Zuid spoor 2,4.7638875246,52.9329005439,,0,hdrz,2
 hdrz|0,,Den Helder Zuid,4.76400017738,52.9327776745,,0,hdrz,
 hdrz|1,,Den Helder Zuid spoor 1,4.7640645504,52.9329134775,,0,hdrz,1
@@ -1356,7 +1374,7 @@ sda|1,,Scheemda spoor 1,6.97814226151,53.1653178654,,0,sda,1
 kma|1,,Krommenie-Assendelft spoor 1,4.76148158312,52.4943224037,,0,kma,1
 asch,asch,Aachen Schanz,6.07382,50.769702,Europe/Amsterdam,1,,
 rat|0,,Raalte,6.27824127674,52.3909949943,,0,rat,
-rat|1,,Raalte spoor 1,6.27807497978,52.3915024213,,0,rat,1
+rat|1,,Raalte spoor 1,6.27812057734,52.3914893265,,0,rat,1
 rat|2,,Raalte spoor 2,6.27805352211,52.3915024213,,0,rat,2
 hmh|2,,Helmond 't Hout spoor 2,5.63068091869,51.4679158433,,0,hmh,2
 hmh|0,,Helmond 't Hout,5.6305038929,51.4680595396,,0,hmh,
@@ -1424,6 +1442,7 @@ wurzb|0,,Wuerzburg Hbf,9.935785,49.801554,,0,wurzb,
 ehv|4,,Eindhoven spoor 4,5.48038601875,51.4431381811,,0,ehv,4
 ehv|5,,Eindhoven spoor 5,5.48034310341,51.4432652375,,0,ehv,5
 rtz,rtz,Rotterdam Zuid,4.51088547707,51.9037915352,Europe/Amsterdam,1,,
+wdn|2,,Wierden spoor 2,6.59226357937,52.3615182085,,0,wdn,2
 zv|0,,Zevenaar,6.07181310654,51.9231990777,,0,zv,
 zv|1,,Zevenaar spoor 1,6.07188284397,51.9232850942,,0,zv,1
 zv|2,,Zevenaar spoor 2,6.07365,51.922892,,0,zv,2
@@ -1643,7 +1662,7 @@ emnz,emnz,Emmen Zuid,6.87420129776,52.7488209148,Europe/Amsterdam,1,,
 nwk|1,,Nieuwerkerk ad IJssel spoor 1,4.61717069149,51.965419948,,0,nwk,1
 nwk|0,,Nieuwerkerk ad IJssel,4.61713314056,51.9652778235,,0,nwk,
 nwk|2,,Nieuwerkerk ad IJssel spoor 2,4.61672276258,51.9652844339,,0,nwk,2
-valtgv,valtgv,Valence TGV,4.89286422729,44.9265868361,Europe/Amsterdam,1,,
+valtgv,valtgv,Valence TGV,4.978611,44.991667,Europe/Amsterdam,1,,
 sda,sda,Scheemda,6.97806179523,53.1654850978,Europe/Amsterdam,1,,
 sdm,sdm,Schiedam Centrum,4.40959990025,51.9218476051,Europe/Amsterdam,1,,
 mt|1,,Maastricht spoor 1,5.70481717587,50.8509158192,,0,mt,1
@@ -1654,11 +1673,12 @@ ut,ut,Utrecht Centraal,5.10987102985,52.0894513306,Europe/Amsterdam,1,,
 mech|0,,Mechelen,4.48370933533,51.01765592,,0,mech,
 utl,utl,Utrecht Lunetten,5.14361590147,52.0658799131,Europe/Amsterdam,1,,
 utm,utm,Utrecht Maliebaan,5.13117313385,52.0878922661,Europe/Amsterdam,1,,
-dvd|1,,Duivendrecht spoor 1,4.93616580963,52.3233011021,,0,dvd,1
+fdp,fdp,Duffel,4.49266,51.091264,Europe/Amsterdam,1,,
+dvd|1,,Duivendrecht spoor 1,4.93732452393,52.3237256996,,0,dvd,1
 dvd|0,,Duivendrecht,4.93619799614,52.3231043761,,0,dvd,
 nsch,nsch,Nieuweschans,7.20052957535,53.1848281929,Europe/Amsterdam,1,,
 dvd|5,,Duivendrecht spoor 5,4.93721187115,52.3231437214,,0,dvd,5
-dvd|4,,Duivendrecht spoor 4,4.93596196175,52.3235634022,,0,dvd,4
+dvd|4,,Duivendrecht spoor 4,4.93563741446,52.3234125799,,0,dvd,4
 rlb|4,,Rotterdam Lombardijen spoor 4,4.53119516373,51.8802927221,,0,rlb,4
 mt|0,,Maastricht,5.70486545563,50.8499912208,,0,mt,
 dvd|8,,Duivendrecht spoor 8,4.935798347,52.3239798003,,0,dvd,8
@@ -1714,7 +1734,7 @@ edn,edn,Eijsden,5.70982217789,50.7720763187,Europe/Amsterdam,1,,
 edo,edo,Dortmund Hbf,7.45931,51.517853,Europe/Amsterdam,1,,
 ddzd|0,,Dordrecht Zuid,4.6721559763,51.7905878351,,0,ddzd,
 gd,gd,Gouda,4.70541536808,52.0169549682,Europe/Amsterdam,1,,
-mt|2,,Maastricht spoor 2,5.70489764214,50.8509225927,,0,mt,2
+fwa|0,fwa,Sint-Katelijne-Waver,4.49579,51.069894,,0,fwa,
 go,go,Goor,6.58494114876,52.2304148646,Europe/Amsterdam,1,,
 gn,gn,Groningen,6.56407356262,53.2109352492,Europe/Amsterdam,1,,
 gk,gk,Grijpskerk,6.30971431732,53.2558943685,Europe/Amsterdam,1,,
@@ -1830,8 +1850,8 @@ gerp,gerp,Groningen Europapark,6.5829616785,53.2061996252,Europe/Amsterdam,1,,
 hrt|0,,Horst-Sevenum,6.04140222073,51.4272500053,,0,hrt,
 edo|0,,Dortmund Hbf,7.45931,51.517853,,0,edo,
 hann|0,,Hannover Hbf,9.74095,52.376726,,0,hann,
-ah|11,,Arnhem spoor 11,5.9003663063,51.985025506,,0,ah,11
-ah|10,,Arnhem spoor 10,5.90169131756,51.9840640986,,0,ah,10
+ah|11,,Arnhem spoor 11,5.90040385723,51.9851477454,,0,ah,11
+ah|10,,Arnhem spoor 10,5.9003663063,51.9850519362,,0,ah,10
 utzl|0,,Utrecht Zuilen,5.08919388056,52.1029581954,,0,utzl,
 gw|2,,Grou-Jirnsum spoor 2,5.82233548164,53.0896009108,,0,gw,2
 ddzd|1,,Dordrecht Zuid spoor 1,4.67151761055,51.7901962983,,0,ddzd,1
@@ -2110,6 +2130,7 @@ vs,vs,Vlissingen,3.5955709219,51.4441278741,Europe/Amsterdam,1,,
 zd|4,,Zaandam spoor 4,4.8136934638,52.43842074,,0,zd,4
 zd|5,,Zaandam spoor 5,4.81360763311,52.4383913079,,0,zd,5
 vz,vz,Vriezenveen,6.60051941872,52.4019213912,Europe/Amsterdam,1,,
+fki,fki,Kontich,4.47626,51.133746,Europe/Amsterdam,1,,
 innsb|0,innsb,Innsbruck Hbf,11.39819,47.264072,,0,innsb,
 msw|2,,Maassluis West spoor 2,4.2367208004,51.9251972639,,0,msw,2
 msw|0,,Maassluis West,4.2360958457,51.9259697176,,0,msw,
@@ -2141,7 +2162,7 @@ zh|0,,Zuidhorn,6.40620946884,53.2484964743,,0,zh,
 zh|1,,Zuidhorn spoor 1,6.40712141991,53.248085621,,0,zh,1
 wdn|0,,Wierden,6.59211874008,52.3612659613,,0,wdn,
 wdn|1,,Wierden spoor 1,6.5922743082,52.3615542436,,0,wdn,1
-wdn|2,,Wierden spoor 2,6.59226357937,52.3615182085,,0,wdn,2
+mt|2,,Maastricht spoor 2,5.70489764214,50.8509225927,,0,mt,2
 sptn,sptn,Santpoort Noord,4.63278114796,52.4337391671,Europe/Amsterdam,1,,
 sptz,sptz,Santpoort Zuid,4.63137567043,52.4197536249,Europe/Amsterdam,1,,
 hrlk|1,,Heerlen De Kissel spoor 1,5.99352478981,50.8901960042,,0,hrlk,1
@@ -2157,8 +2178,10 @@ sdt|2,,Sliedrecht spoor 2,4.77845996618,51.8295536133,,0,sdt,2
 lw|5b,,Leeuwarden spoor 5b,5.79423129559,53.1963090295,,0,lw,5b
 lw|5a,,Leeuwarden spoor 5a,5.79225718975,53.1959940868,,0,lw,5a
 kwba|0,,Wuppertal-Barmen,7.19599,51.267076,,0,kwba,
+gmd,gmd,Mortsel-Deurnesteenweg,4.44683,51.182413,Europe/Amsterdam,1,,
 ldl|1,,Leiden Lammenschans spoor 1,4.49292272329,52.1467363296,,0,ldl,1
 ldl|0,,Leiden Lammenschans,4.49302732944,52.147036708,,0,ldl,
+adh,adh,Leeuwarden Achter De Hoven,5.80409,53.197555,Europe/Amsterdam,1,,
 gdm|3,,Geldermalsen spoor 3,5.27174,51.882596,,0,gdm,3
 berch|0,,Antwerpen-Berchem,4.43212509155,51.1994351214,,0,berch,
 gdm|0,,Geldermalsen,5.27213931084,51.8827928276,,0,gdm,
@@ -2170,6 +2193,7 @@ hks|2,,Hoogkarspel spoor 2,5.18278285861,52.6903657376,,0,hks,2
 hks|1,,Hoogkarspel spoor 1,5.18276810646,52.6903876852,,0,hks,1
 hks|0,,Hoogkarspel,5.18229871988,52.6905234347,,0,hks,
 kwo,kwo,Wuppertal Oberbarmen,7.22149,51.273869,Europe/Amsterdam,1,,
+mho,mho,Hove,4.46486,51.153522,Europe/Amsterdam,1,,
 kkd|0,,Koeln Deutz,6.9746,50.940906,,0,kkd,
 asdz|4,,Amsterdam Zuid spoor 4,4.87268328667,52.3388904994,,0,asdz,4
 asdz|0,,Amsterdam Zuid,4.87299442291,52.3407734434,,0,asdz,
@@ -2225,7 +2249,7 @@ asd|5,,Amsterdam Centraal spoor 5,4.90029394627,52.3788968612,,0,asd,5
 asd|4,,Amsterdam Centraal spoor 4,4.90025639534,52.3788477416,,0,asd,4
 asd|7,,Amsterdam Centraal spoor 7,4.90043878555,52.3789787271,,0,asd,7
 gn|6b,,Groningen spoor 6b,6.5657043457,53.2105240353,,0,gn,6b
-asd|0,,Amsterdam Centraal,4.89975750446,52.378205907,,0,asd,
+asd|0,,Amsterdam Centraal,4.89977896214,52.3782288298,,0,asd,
 gn|6a,,Groningen spoor 6a,6.56336009502,53.210440507,,0,gn,6a
 ddr|3a,,Dordrecht spoor 3a,4.66649651527,51.8074240168,,0,ddr,3a
 ddr|3b,,Dordrecht spoor 3b,4.66914117336,51.8071321326,,0,ddr,3b
