@@ -209,7 +209,7 @@ insert into gtfs_route_bikes_allowed values ('ARR','15024',2);
 -- Cornercases:
 --   StopOrder and TimingLinkOrder expect a stable minimum.
 COPY (
-select
+SELECT DISTINCT ON (trip_id)
 p.dataownercode||'|'||p.lineplanningnumber AS route_id,
 p.version||'|'||p.dataownercode||'|'||p.organizationalunitcode||'|'||p.schedulecode||'|'||p.scheduletypecode AS service_id,
 p.version||'|'||p.dataownercode||'|'||p.organizationalunitcode||'|'||p.schedulecode||'|'||p.scheduletypecode||'|'||p.lineplanningnumber||'|'||p.journeynumber 
@@ -235,9 +235,9 @@ j.version = jt.version AND
 jt.dataownercode = d.dataownercode AND
 jt.destcode = d.destcode AND
 jt.version = d.version AND
-jt.timinglinkorder = 1 AND
-p.stoporder = 1 AND
+stoporder = 1 AND
 j.dataownercode||'|'||j.lineplanningnumber not in (select dataownercode||'|'||lineplanningnumber from line where transporttype = 'TRAIN')  
+ORDER BY trip_id,timinglinkorder ASC
 ) TO '/tmp/trips.txt' WITH CSV HEADER;
 
 -- workaround for some KV1

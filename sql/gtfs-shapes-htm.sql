@@ -5,6 +5,13 @@ SELECT
 'http://www.htm.nl/' as agency_url,
 'Europe/Amsterdam' as agency_timezone,
 'nl' as agency_lang
+UNION
+SELECT
+'HTMBUZZ' as agency_id,
+'HTMbuzz' as agency_name,
+'http://www.htm.nl/' as agency_url,
+'Europe/Amsterdam' as agency_timezone,
+'nl' as agency_lang
 ) TO '/tmp/agency.txt' WITH CSV HEADER;
 
 -- GTFS: shapes.txt
