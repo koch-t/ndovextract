@@ -81,7 +81,16 @@ def setversion(conn,meta):
     cur = conn.cursor()
     if 'DataOwnerVersion' not in meta:
         meta['DataOwnerVersion'] = 1
-    cur.execute("INSERT INTO version (dataownercode,validfrom,validthru,filename,dataownerversion) VALUES (%(DataOwnerCode)s,%(ValidFrom)s,%(ValidThru)s,%(Key)s,%(DataOwnerVersion)s)",meta)
+    conn.commit()
+    if meta['DataOwnerCode'] == 'HTM':
+        if 'buzz' in meta['Key'].lower():
+            meta['UnitCode'] = 'SGHB'
+        else:
+            meta['UnitCode'] = 'SGHR'
+        #meta['UnitCode'] = cur.fetchone()[0]
+    else:
+        meta['UnitCode'] = meta['DataOwnerCode']
+    cur.execute("INSERT INTO version (dataownercode,validfrom,validthru,filename,dataownerversion,unitcode) VALUES (%(DataOwnerCode)s,%(ValidFrom)s,%(ValidThru)s,%(Key)s,%(DataOwnerVersion)s,%(UnitCode)s)",meta)
     for x in reversed(importorder):
         cur.execute("update %s_delta set version = (select last_value from version_version_seq)" % (x))
     conn.commit()
@@ -92,7 +101,25 @@ def mergedelta(dataownercode,conn,delta):
     else:
         print 'Merging KV1'
     cur = conn.cursor()
-    if delta and dataownercode in ['GVB']: #Cut away the data within the boundaries of the schervers validfrom/validthru
+    if dataownercode in ['SYNTUS']:
+        cur.execute("""
+DELETE FROM OPERDAY_delta as o WHERE validdate < (SELECT validfrom FROM schedvers_delta as s WHERE s.schedulecode = o.schedulecode AND 
+s.scheduletypecode = o.scheduletypecode AND s.version = o.version AND s.organizationalunitcode = o.organizationalunitcode)""")
+        conn.commit()
+    if dataownercode in ['HTM']:
+        cur.execute("""
+DELETE FROM operday as o
+WHERE EXISTS
+( SELECT 1 FROM schedvers_delta as d LEFT JOIN version as dv USING(version), version as ov
+WHERE 
+ov.version = o.version AND
+ov.unitcode = dv.unitcode AND
+o.organizationalunitcode = d.organizationalunitcode AND
+o.dataownercode = d.dataownercode AND 
+o.validdate between d.validfrom and d.validthru)
+""")
+        conn.commit()
+    elif delta and dataownercode in ['GVB']: #Cut away the data within the boundaries of the schervers validfrom/validthru
         cur.execute("""
 DELETE FROM operday as o
 WHERE EXISTS
@@ -105,7 +132,7 @@ WHERE EXISTS
 ( SELECT 1 FROM operday_delta as d WHERE o.organizationalunitcode = d.organizationalunitcode
 AND o.dataownercode = d.dataownercode and o.validdate = d.validdate)
 """)
-    elif not delta and dataownercode not in ['QBUZZ','HTM']:
+    elif not delta and dataownercode not in ['QBUZZ']:
         cur.execute("""
 DELETE FROM operday as o
 WHERE validdate >=
@@ -221,10 +248,11 @@ def sync(conn,kv1index,compress=False):
             deletedelta(conn,file['key'])
         file['validfrom'] = periode.find('startdatum').text
         file['validthru'] = periode.find('einddatum').text
+        file['index'] = int(periode.find('index').text)
         if file['key'] == 'a00bac99-e404-4783-b2f7-a39d48747999':
             file['isbaseline'] = True
         index.append(file)
-    index = multikeysort(index, ['-isbaseline','publishdate'])
+    index = multikeysort(index, ['-isbaseline','index','publishdate'])
     changed = False
     for f in index:
         print 'key: '+f['key']+' filename: ' + f['filename'] + ' isbaseline: ' + str(f['isbaseline']) + ' startdatum ' + f['validfrom'][0:10] + 'einddatum ' + f['validthru'][0:10] 
@@ -295,8 +323,12 @@ def main():
             files.sort(key=lambda f: os.path.getmtime(os.path.join(opts.addfolder, f)))
         conn = psycopg2.connect("dbname='%s'" % (opts.database))
         for file in files:
+          try:
             if file[-4:].lower() == '.zip' and importfile(conn,opts.addfolder,file,1,None,opts.delta,opts.compress):
                 changed = True
+          except Exception as e:
+            conn.rollback()
+            raise
         if purge(conn,delta=opts.delta):
             changed = True
         conn.close()
